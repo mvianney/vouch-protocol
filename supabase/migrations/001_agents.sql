@@ -21,12 +21,12 @@ create table if not exists public.agents (
   owner_wallet      text        not null,
 
   -- Reputation data from 8004 indexer
-  -- quality_score: ATOM-adjusted 0–100 score (confidence-weighted)
-  trust_score       numeric(6,2) default 0,
+  -- quality_score: ATOM-adjusted score (can exceed 100 during ATOM calibration)
+  trust_score       numeric(10,4) default 0,
   -- raw_avg_score: unweighted average of all feedback values
-  raw_avg_score     numeric(6,2) default 0,
+  raw_avg_score     numeric(10,4) default 0,
   -- confidence: 0–1 confidence factor (low = sparse feedback)
-  confidence        numeric(5,4) default 0,
+  confidence        numeric(8,6)  default 0,
   feedback_count    integer      default 0,
 
   -- Sync bookkeeping

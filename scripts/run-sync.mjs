@@ -93,15 +93,25 @@ async function fetchIpfsManifest(uri) {
 }
 
 function extractEndpoint(manifest) {
-  if (!manifest?.services?.length) return null;
-  for (const type of ["mcp", "a2a", "oasf"]) {
-    const svc = manifest.services.find((s) => s.type?.toLowerCase().includes(type));
-    if (svc?.value) return svc.value;
+  if (!manifest) return null;
+  if (manifest.services?.length) {
+    for (const type of ["mcp", "a2a", "oasf"]) {
+      const svc = manifest.services.find((s) => s.type?.toLowerCase().includes(type));
+      if (svc?.value) return svc.value;
+    }
+    if (manifest.services[0]?.value) return manifest.services[0].value;
   }
-  return manifest.services[0]?.value ?? null;
+  return manifest.url ?? manifest.endpoint ?? null;
 }
 
 function toRow(agent, manifest) {
+  // Clamp scores defensively — quality_score can exceed 100 during ATOM
+  // calibration (observed: 200). Store raw; the ranking formula handles it.
+  const safeNum = (v, decimals = 4) =>
+    typeof v === "number" && isFinite(v)
+      ? parseFloat(v.toFixed(decimals))
+      : 0;
+
   return {
     asset_id: agent.asset,
     name: manifest?.name ?? agent.nft_name ?? null,
@@ -109,23 +119,51 @@ function toRow(agent, manifest) {
     skills: manifest?.skills ?? [],
     service_endpoint: extractEndpoint(manifest),
     owner_wallet: agent.owner,
-    trust_score: agent.quality_score ?? 0,
-    raw_avg_score: agent.raw_avg_score ?? 0,
-    confidence: agent.confidence ?? 0,
-    feedback_count: agent.feedback_count ?? 0,
+    trust_score:    safeNum(agent.quality_score),
+    raw_avg_score:  safeNum(agent.raw_avg_score),
+    confidence:     safeNum(agent.confidence, 6),
+    feedback_count: typeof agent.feedback_count === "number" ? agent.feedback_count : 0,
     last_synced_at: new Date().toISOString(),
   };
 }
 
+const UPSERT_MAX_RETRIES = 3;
+const UPSERT_RETRY_DELAY_MS = 1_500;
+
+/**
+ * Upsert a batch with retry + fresh client reconnection.
+ *
+ * Key insight: if a previous request errored (e.g. numeric overflow, network
+ * drop), the underlying fetch connection in the existing client may be in a
+ * broken state. Creating a new client on each retry gives us a fresh
+ * connection pool and avoids cascading "fetch failed" errors.
+ */
 async function upsertBatch(rows, errors) {
-  const { error } = await db.from("agents").upsert(rows, { onConflict: "asset_id" });
-  if (error) {
-    errors.push(`Upsert error: ${error.message}`);
-    console.error(`[run-sync] Upsert error: ${error.message}`);
-    return 0;
+  for (let attempt = 1; attempt <= UPSERT_MAX_RETRIES; attempt++) {
+    // Fresh client on every attempt — clears any corrupted connection state
+    const freshDb = createClient(supabaseUrl, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { error } = await freshDb
+      .from("agents")
+      .upsert(rows, { onConflict: "asset_id" });
+
+    if (!error) return rows.length;
+
+    const isLast = attempt === UPSERT_MAX_RETRIES;
+    const msg = `Upsert attempt ${attempt}/${UPSERT_MAX_RETRIES} failed: ${error.message}`;
+    console.error(`[run-sync] ${msg}${isLast ? " — skipping batch" : ` — retry in ${UPSERT_RETRY_DELAY_MS}ms`}`);
+
+    if (!isLast) {
+      await new Promise((r) => setTimeout(r, UPSERT_RETRY_DELAY_MS));
+    } else {
+      errors.push(msg);
+    }
   }
-  return rows.length;
+  return 0;
 }
+
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
@@ -150,7 +188,8 @@ const start = Date.now();
 const errors = [];
 let totalFetched = 0;
 let totalUpserted = 0;
-let offset = 0;
+let offset = parseInt(process.env.START_OFFSET ?? process.argv[3] ?? "0", 10);
+if (isNaN(offset) || offset < 0) offset = 0;
 let consecutiveFailures = 0;
 let done = false;
 

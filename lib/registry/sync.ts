@@ -74,17 +74,36 @@ interface AgentManifest {
   name?: string;
   description?: string;
   skills?: string[];
+  url?: string;
+  endpoint?: string;
   services?: Array<{ type: string; value: string }>;
 }
 
 /**
- * Attempt to fetch the agent's IPFS manifest across multiple gateways.
+ * Attempt to fetch the agent's manifest across IPFS gateways or direct HTTP.
  * Returns null on any failure — callers should handle gracefully.
  */
 async function fetchIpfsManifest(
   uri: string | null
 ): Promise<AgentManifest | null> {
   if (!uri) return null;
+
+  // Direct HTTP/HTTPS URL
+  if (uri.startsWith("http://") || uri.startsWith("https://")) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), IPFS_TIMEOUT_MS);
+      const res = await fetch(uri, {
+        signal: controller.signal,
+        headers: { Accept: "application/json" },
+      });
+      clearTimeout(timeoutId);
+      if (!res.ok) return null;
+      return (await res.json()) as AgentManifest;
+    } catch {
+      return null;
+    }
+  }
 
   // Support ipfs:// and direct CID references
   const cid = uri.replace(/^ipfs:\/\//, "").replace(/^\/ipfs\//, "");
@@ -114,26 +133,39 @@ async function fetchIpfsManifest(
 
 /**
  * Extract the primary service endpoint from a manifest.
- * Prefers MCP, then A2A, then OASF, then first available.
+ * Prefers MCP, then A2A, then OASF, then top-level url/endpoint, then first available.
  */
 function extractEndpoint(manifest: AgentManifest | null): string | null {
-  if (!manifest?.services?.length) return null;
-  const priority = ["mcp", "a2a", "oasf"];
-  for (const type of priority) {
-    const svc = manifest.services.find((s) =>
-      s.type.toLowerCase().includes(type)
-    );
-    if (svc?.value) return svc.value;
+  if (!manifest) return null;
+  if (manifest.services?.length) {
+    const priority = ["mcp", "a2a", "oasf"];
+    for (const type of priority) {
+      const svc = manifest.services.find((s) =>
+        s.type.toLowerCase().includes(type)
+      );
+      if (svc?.value) return svc.value;
+    }
+    if (manifest.services[0]?.value) return manifest.services[0].value;
   }
-  return manifest.services[0]?.value ?? null;
+  return manifest.url ?? manifest.endpoint ?? null;
 }
 
 // ─── Row mapper ───────────────────────────────────────────────────────────────
 
 /**
+ * Safe numeric coercion — rounds to given decimal places, returns 0 for
+ * non-finite values. Prevents numeric overflow errors from wild ATOM scores.
+ */
+function safeNum(v: number | null | undefined, decimals = 4): number {
+  return typeof v === "number" && isFinite(v)
+    ? parseFloat(v.toFixed(decimals))
+    : 0;
+}
+
+/**
  * Map an IndexedAgent (+ optional manifest) into an AgentRow for Supabase.
  *
- * trust_score  = quality_score  (ATOM confidence-weighted, 0–100)
+ * trust_score  = quality_score  (ATOM confidence-weighted, can exceed 100)
  * raw_avg_score = raw_avg_score (unweighted mean)
  * confidence   = confidence     (0–1, sparse = low)
  */
@@ -148,30 +180,49 @@ function toAgentRow(
     skills: manifest?.skills ?? [],
     service_endpoint: extractEndpoint(manifest),
     owner_wallet: agent.owner,
-    trust_score: agent.quality_score ?? 0,
-    raw_avg_score: agent.raw_avg_score ?? 0,
-    confidence: agent.confidence ?? 0,
-    feedback_count: agent.feedback_count ?? 0,
+    trust_score:    safeNum(agent.quality_score),
+    raw_avg_score:  safeNum(agent.raw_avg_score),
+    confidence:     safeNum(agent.confidence, 6),
+    feedback_count: typeof agent.feedback_count === "number" ? agent.feedback_count : 0,
     last_synced_at: new Date().toISOString(),
   };
 }
 
 // ─── Upsert batch ─────────────────────────────────────────────────────────────
 
+const UPSERT_MAX_RETRIES = 3;
+const UPSERT_RETRY_DELAY_MS = 1_500;
+
+/**
+ * Upsert a batch with retry + fresh Supabase client reconnection.
+ *
+ * A client whose connection was corrupted (numeric overflow, network drop)
+ * will not self-heal. Creating a fresh client on each retry gives a clean
+ * HTTP connection pool, preventing one bad batch from killing all subsequent ones.
+ */
 async function upsertBatch(
   rows: AgentRow[],
   errors: string[]
 ): Promise<number> {
-  const db = supabaseAdmin();
-  const { error } = await db
-    .from("agents")
-    .upsert(rows, { onConflict: "asset_id" });
+  for (let attempt = 1; attempt <= UPSERT_MAX_RETRIES; attempt++) {
+    const db = supabaseAdmin(); // fresh client each attempt
+    const { error } = await db
+      .from("agents")
+      .upsert(rows, { onConflict: "asset_id" });
 
-  if (error) {
-    errors.push(`Supabase upsert error: ${error.message}`);
-    return 0;
+    if (!error) return rows.length;
+
+    const isLast = attempt === UPSERT_MAX_RETRIES;
+    const msg = `Upsert attempt ${attempt}/${UPSERT_MAX_RETRIES} failed: ${error.message}`;
+    console.warn(`[sync] ${msg}${isLast ? " — skipping batch" : ` — retry in ${UPSERT_RETRY_DELAY_MS}ms`}`);
+
+    if (!isLast) {
+      await new Promise((r) => setTimeout(r, UPSERT_RETRY_DELAY_MS));
+    } else {
+      errors.push(msg);
+    }
   }
-  return rows.length;
+  return 0;
 }
 
 // ─── Main sync ────────────────────────────────────────────────────────────────
