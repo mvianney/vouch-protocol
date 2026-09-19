@@ -65,7 +65,7 @@ const config: Config = {
 
       // ─── Font sizes ───────────────────────────────────────────────────────
       fontSize: {
-        "2xs": ["0.625rem", { lineHeight: "1rem" }],
+        "2xs": ["0.65rem", { lineHeight: "1rem" }],
       },
 
       // ─── Spacing extras ───────────────────────────────────────────────────

@@ -149,13 +149,17 @@
   .terminal-dot-green  { background: #28c840; }
 
   .terminal-label {
-    @apply font-mono text-2xs tracking-wider uppercase;
+    @apply font-mono tracking-wider uppercase;
+    font-size: 0.65rem;
+    line-height: 1rem;
     color: var(--text-muted);
     letter-spacing: 0.08em;
   }
 
   .terminal-badge {
-    @apply ml-auto font-mono text-2xs px-1.5 py-0.5 rounded;
+    @apply ml-auto font-mono px-1.5 py-0.5 rounded;
+    font-size: 0.65rem;
+    line-height: 1rem;
     background: var(--purple-faint);
     color: var(--purple);
     border: 1px solid rgba(109, 90, 194, 0.2);
@@ -193,7 +197,9 @@
   .stat-value-sm { @apply stat-value text-2xl; }
 
   .stat-live {
-    @apply flex items-center gap-2 text-2xs font-mono uppercase tracking-wider mt-auto;
+    @apply flex items-center gap-2 font-mono uppercase tracking-wider mt-auto;
+    font-size: 0.65rem;
+    line-height: 1rem;
     color: var(--text-muted);
   }
 
@@ -223,7 +229,9 @@
     border-bottom: 1px solid var(--border-dim);
   }
   .compare-table th {
-    @apply py-2.5 px-4 text-left text-2xs uppercase tracking-widest font-semibold;
+    @apply py-2.5 px-4 text-left uppercase tracking-widest font-semibold;
+    font-size: 0.65rem;
+    line-height: 1rem;
     color: var(--text-muted);
     font-family: var(--font-inter), system-ui, sans-serif;
   }
@@ -266,7 +274,9 @@
     color: var(--text-secondary);
   }
   .mono-hash {
-    @apply font-mono text-2xs tracking-tight;
+    @apply font-mono tracking-tight;
+    font-size: 0.65rem;
+    line-height: 1rem;
     color: var(--text-muted);
     word-break: break-all;
   }
@@ -289,7 +299,9 @@
 
   /* ── Utility: tag / badge ─────────────────────────────────────────────── */
   .tag {
-    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider;
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-mono uppercase tracking-wider;
+    font-size: 0.65rem;
+    line-height: 1rem;
     border: 1px solid var(--border-faint);
     color: var(--text-muted);
     background: var(--void-3);
