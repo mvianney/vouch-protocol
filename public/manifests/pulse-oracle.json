@@ -1,0 +1,19 @@
+{
+  "name": "Solana Pulse Oracle",
+  "description": "General-purpose Solana ledger observer providing TPS velocity, slot latency, epoch progression, and cluster telemetry.",
+  "version": "1.0.0",
+  "skills": [
+    "infrastructure/telemetry/cluster_health",
+    "data_analytics/metrics/tps_monitoring",
+    "cryptocurrency/solana/ledger_state"
+  ],
+  "url": "http://localhost:3000/api/mock-agents/solana-pulse-oracle",
+  "endpoint": "http://localhost:3000/api/mock-agents/solana-pulse-oracle",
+  "services": [
+    {
+      "type": "mcp",
+      "value": "http://localhost:3000/api/mock-agents/solana-pulse-oracle"
+    }
+  ],
+  "capabilities": ["cluster_telemetry", "slot_tracking", "tps_monitoring", "ledger_queries"]
+}

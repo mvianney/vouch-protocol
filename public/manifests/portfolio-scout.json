@@ -1,0 +1,19 @@
+{
+  "name": "Token Portfolio Scout",
+  "description": "Comprehensive token holdings analyzer mapping mint addresses, token metadata, decimals, and portfolio valuations.",
+  "version": "1.0.0",
+  "skills": [
+    "decentralized_finance/portfolio/token_holdings",
+    "cryptocurrency/solana/spl_token_metadata",
+    "data_analytics/valuation/asset_breakdown"
+  ],
+  "url": "http://localhost:3000/api/mock-agents/token-portfolio-scout",
+  "endpoint": "http://localhost:3000/api/mock-agents/token-portfolio-scout",
+  "services": [
+    {
+      "type": "mcp",
+      "value": "http://localhost:3000/api/mock-agents/token-portfolio-scout"
+    }
+  ],
+  "capabilities": ["token_holdings", "mint_inspection", "portfolio_breakdown"]
+}

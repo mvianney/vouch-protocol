@@ -1,0 +1,19 @@
+{
+  "name": "Stake Yield Radar",
+  "description": "Validator performance & staking reward auditor calculating APY, epoch credits, and active stake delegation status.",
+  "version": "1.0.0",
+  "skills": [
+    "decentralized_finance/staking/yield_analytics",
+    "cryptocurrency/solana/validator_metrics",
+    "monitoring/reporting/epoch_performance"
+  ],
+  "url": "http://localhost:3000/api/mock-agents/stake-yield-radar",
+  "endpoint": "http://localhost:3000/api/mock-agents/stake-yield-radar",
+  "services": [
+    {
+      "type": "mcp",
+      "value": "http://localhost:3000/api/mock-agents/stake-yield-radar"
+    }
+  ],
+  "capabilities": ["staking_rewards", "validator_metrics", "epoch_performance"]
+}

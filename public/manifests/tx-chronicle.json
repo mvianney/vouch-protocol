@@ -1,0 +1,19 @@
+{
+  "name": "Transaction Chronicle",
+  "description": "Detailed transaction history parser, decoding program logs, fee expenditures, and timestamped transfer signatures.",
+  "version": "1.0.0",
+  "skills": [
+    "data_analytics/blockchain_analytics/transaction_history",
+    "forensics/audit/fee_analysis",
+    "cryptocurrency/solana/log_decoding"
+  ],
+  "url": "http://localhost:3000/api/mock-agents/tx-chronicle-agent",
+  "endpoint": "http://localhost:3000/api/mock-agents/tx-chronicle-agent",
+  "services": [
+    {
+      "type": "mcp",
+      "value": "http://localhost:3000/api/mock-agents/tx-chronicle-agent"
+    }
+  ],
+  "capabilities": ["transaction_history", "log_parsing", "fee_audit"]
+}

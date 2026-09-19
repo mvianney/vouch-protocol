@@ -1,0 +1,23 @@
+{
+  "name": "Solana Balance Sentinel",
+  "description": "Real-time SOL and SPL token balance tracker across Solana devnet and mainnet with low-balance alert thresholds.",
+  "version": "1.0.0",
+  "skills": [
+    "data_analytics/blockchain_analytics/balance_tracking",
+    "monitoring/alerting/low_balance_detector",
+    "cryptocurrency/solana/account_inspection"
+  ],
+  "url": "http://localhost:3000/api/mock-agents/solana-balance-sentinel",
+  "endpoint": "http://localhost:3000/api/mock-agents/solana-balance-sentinel",
+  "services": [
+    {
+      "type": "mcp",
+      "value": "http://localhost:3000/api/mock-agents/solana-balance-sentinel"
+    },
+    {
+      "type": "a2a",
+      "value": "http://localhost:3000/api/mock-agents/solana-balance-sentinel"
+    }
+  ],
+  "capabilities": ["wallet_balance", "spl_balance", "account_monitoring"]
+}
