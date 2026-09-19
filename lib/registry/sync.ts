@@ -30,14 +30,19 @@ import { supabaseAdmin } from "@/lib/db/supabase";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
-const SYNC_BATCH_SIZE = 100; // agents per indexer page
-const UPSERT_BATCH_SIZE = 50; // rows per Supabase upsert call
+const SYNC_BATCH_SIZE = 100;   // agents per indexer page
+const UPSERT_BATCH_SIZE = 50;  // rows per Supabase upsert call
 const IPFS_TIMEOUT_MS = 4_000;
 const IPFS_GATEWAYS = [
   "https://ipfs.io/ipfs/",
   "https://cloudflare-ipfs.com/ipfs/",
   "https://gateway.pinata.cloud/ipfs/",
 ];
+
+// Per-page fetch retry config
+const PAGE_MAX_RETRIES = 3;    // retry a failing page up to 3 times
+const PAGE_RETRY_DELAY_MS = 2_000; // wait 2 s between retries
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -205,21 +210,55 @@ export async function syncAgents(
 
   let offset = 0;
   let pageEmpty = false;
+  let consecutiveFailures = 0;
+  const MAX_CONSECUTIVE_FAILURES = 5; // abort if 5 pages in a row all fail
 
   while (!pageEmpty) {
-    // ── Fetch page from indexer ──────────────────────────────────────────────
-    let page: IndexedAgent[];
-    try {
-      page = await indexer.getAgents({
-        limit: SYNC_BATCH_SIZE,
-        offset,
-      });
-    } catch (err) {
-      const msg = `Indexer fetch failed at offset=${offset}: ${String(err)}`;
+    // ── Fetch page from indexer (with per-page retry) ────────────────────────
+    let page: IndexedAgent[] | null = null;
+    let lastFetchErr: unknown = null;
+
+    for (let attempt = 1; attempt <= PAGE_MAX_RETRIES; attempt++) {
+      try {
+        page = await indexer.getAgents({
+          limit: SYNC_BATCH_SIZE,
+          offset,
+        });
+        break; // success — exit retry loop
+      } catch (err) {
+        lastFetchErr = err;
+        const isLast = attempt === PAGE_MAX_RETRIES;
+        console.warn(
+          `[sync] Fetch attempt ${attempt}/${PAGE_MAX_RETRIES} failed at offset=${offset}: ${String(err)}${
+            isLast ? " — skipping page" : ` — retrying in ${PAGE_RETRY_DELAY_MS}ms`
+          }`
+        );
+        if (!isLast) {
+          await new Promise((r) => setTimeout(r, PAGE_RETRY_DELAY_MS));
+        }
+      }
+    }
+
+    // All retries exhausted for this page — record error, skip to next offset
+    if (page === null) {
+      const msg = `Indexer fetch permanently failed at offset=${offset} after ${PAGE_MAX_RETRIES} attempts: ${String(lastFetchErr)}`;
       errors.push(msg);
       console.error(`[sync] ${msg}`);
-      break;
+      // Advance offset so the next iteration tries the following page,
+      // rather than aborting the entire sync.
+      offset += SYNC_BATCH_SIZE;
+      consecutiveFailures++;
+      if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+        const abortMsg = `Aborting sync: ${consecutiveFailures} consecutive page failures. Indexer may be down.`;
+        errors.push(abortMsg);
+        console.error(`[sync] ${abortMsg}`);
+        pageEmpty = true;
+      }
+      continue;
     }
+
+    // Successful fetch — reset consecutive failure counter
+    consecutiveFailures = 0;
 
     if (!page.length) {
       pageEmpty = true;
@@ -247,6 +286,7 @@ export async function syncAgents(
       const count = await upsertBatch(batch, errors);
       totalUpserted += count;
     }
+
 
     offset += page.length;
 
