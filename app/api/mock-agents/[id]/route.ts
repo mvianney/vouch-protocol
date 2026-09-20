@@ -113,7 +113,31 @@ export async function POST(
   }
 
   const body = await req.json().catch(() => ({}));
-  const targetWallet = body.wallet || body.address;
+  const { searchParams } = req.nextUrl;
+
+  // Support simulated failure modes for testing resilience
+  if (searchParams.get("simulate") === "timeout" || body.simulate === "timeout") {
+    const delay = parseInt(searchParams.get("delay") || "10000", 10);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+
+  if (searchParams.get("simulate") === "error" || body.simulate === "error") {
+    return NextResponse.json(
+      { error: "Simulated internal agent processing failure", code: "AGENT_RUNTIME_EXCEPTION" },
+      { status: 500 }
+    );
+  }
+
+  let targetWallet = body.wallet || body.address;
+
+  // If wallet not passed directly, attempt extraction from taskDescription or task text (base58 regex)
+  if (!targetWallet) {
+    const textToSearch = body.taskDescription || body.task || "";
+    const b58Match = textToSearch.match(/\b[1-9A-HJ-NP-Za-km-z]{32,44}\b/);
+    if (b58Match) {
+      targetWallet = b58Match[0];
+    }
+  }
 
   let executionResult: Record<string, unknown> = {};
 

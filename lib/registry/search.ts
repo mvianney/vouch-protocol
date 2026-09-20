@@ -167,6 +167,17 @@ export async function searchAgents(
     rows = (data ?? []) as unknown as AgentSearchResult[];
   } else {
     // Full-text search on name and description (OR), plus skills substring
+    // Extract meaningful search tokens for natural language prompts
+    // (e.g. "check the SOL balance of this wallet: <address>" -> "SOL | balance | wallet")
+    const rawTokens = trimmed
+      .replace(/[^\w\s]/g, " ")
+      .split(/\s+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 3 && !t.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/));
+
+    const searchKeywords = rawTokens.length > 0 ? rawTokens : [trimmed];
+    const tsQuery = searchKeywords.join(" | ");
+
     const [nameResult, descResult, skillsResult] = await Promise.all([
       supabase
         .from("agents")
@@ -174,8 +185,7 @@ export async function searchAgents(
           "asset_id, name, description, skills, service_endpoint, owner_wallet, " +
           "trust_score, raw_avg_score, confidence, feedback_count, last_synced_at"
         )
-        .textSearch("name", trimmed, {
-          type: "websearch",
+        .textSearch("name", tsQuery, {
           config: "english",
         })
         .gte("feedback_count", min_feedback_count)
@@ -187,16 +197,13 @@ export async function searchAgents(
           "asset_id, name, description, skills, service_endpoint, owner_wallet, " +
           "trust_score, raw_avg_score, confidence, feedback_count, last_synced_at"
         )
-        .textSearch("description", trimmed, {
-          type: "websearch",
+        .textSearch("description", tsQuery, {
           config: "english",
         })
         .gte("feedback_count", min_feedback_count)
         .limit(fetchLimit),
 
-      // Skills: check if any skill contains the search term (case-insensitive)
-      // Using Postgres array @> requires exact match; we use ilike via RPC or
-      // filter client-side after fetching candidates ordered by trust_score.
+      // Query candidate agents ordered by trust score to match against skills array
       supabase
         .from("agents")
         .select(
@@ -212,7 +219,7 @@ export async function searchAgents(
     const seen = new Set<string>();
     const merged: AgentSearchResult[] = [];
 
-    for (const result of [nameResult, descResult]) {
+    for (const result of [descResult, nameResult]) {
       for (const row of result.data ?? []) {
         const r = row as unknown as AgentSearchResult;
         if (!seen.has(r.asset_id)) {
@@ -222,13 +229,15 @@ export async function searchAgents(
       }
     }
 
-    // From the broad candidates, add skill matches not already in results
+    // From the broad candidates, add skill matches (substring match on any token)
+    const lowerTokens = searchKeywords.map((k) => k.toLowerCase());
     for (const row of skillsResult.data ?? []) {
       const r = row as unknown as AgentSearchResult;
       if (seen.has(r.asset_id)) continue;
-      const hasSkillMatch = (r.skills ?? []).some((skill) =>
-        skill.toLowerCase().includes(skillLower)
-      );
+      const hasSkillMatch = (r.skills ?? []).some((skill) => {
+        const s = skill.toLowerCase();
+        return lowerTokens.some((t) => s.includes(t));
+      });
       if (hasSkillMatch) {
         seen.add(r.asset_id);
         merged.push(r);

@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { searchAgents } from "@/lib/registry/search";
 import { selectAndVerifyAgent } from "@/lib/hiring/select";
 import { signHireRequest } from "@/lib/hiring/sign";
+import { dispatchTaskToAgent } from "@/lib/execution/dispatch";
 
 export const dynamic = "force-dynamic";
 
@@ -71,9 +72,38 @@ export async function POST(req: NextRequest) {
 
     console.log(`[api/hire] Successfully generated signed hire request for ${selectedAgent.name} (${selectedAgent.asset_id})`);
 
-    // Step 5: Return complete response
+    // Step 5: Dispatch task to the hired agent's service endpoint
+    let executionResult = null;
+    if (selectedAgent.service_endpoint) {
+      console.log(`[api/hire] Dispatching task to agent endpoint: ${selectedAgent.service_endpoint}`);
+      executionResult = await dispatchTaskToAgent(
+        selectedAgent.service_endpoint,
+        signedHire,
+        {
+          timeoutMs: 8000,
+          extraParams: {
+            wallet: body.wallet || body.address,
+            simulate: body.simulate,
+            delay: body.delay,
+          },
+        }
+      );
+      console.log(`[api/hire] Dispatch result (success=${executionResult.success}, duration=${executionResult.durationMs}ms)`);
+    } else {
+      console.warn(`[api/hire] Agent ${selectedAgent.name} has no service_endpoint configured`);
+      executionResult = {
+        success: false,
+        endpoint: "",
+        error: "Agent does not have a registered service endpoint",
+        errorType: "INVALID_ENDPOINT",
+        durationMs: 0,
+        dispatchedAt: new Date().toISOString(),
+      };
+    }
+
+    // Step 6: Return complete pipeline response
     return NextResponse.json({
-      status: "ready_to_dispatch",
+      status: executionResult.success ? "completed" : "execution_failed",
       task: trimmedTask,
       selectedAgent: {
         asset_id: selectedAgent.asset_id,
@@ -103,8 +133,9 @@ export async function POST(req: NextRequest) {
         expiresAt: signedHire.parsedPayload.data.expiresAt,
         platformSigner: signedHire.signerPublicKey,
       },
+      execution: executionResult,
       candidatesEvaluatedCount: searchResponse.results.length,
-      pipelineDurationMs: searchResponse.duration_ms,
+      pipelineDurationMs: searchResponse.duration_ms + (executionResult?.durationMs ?? 0),
     });
   } catch (err: any) {
     console.error("[api/hire] Pipeline error:", err);
