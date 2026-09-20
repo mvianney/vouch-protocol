@@ -67,7 +67,7 @@ async function runPipelineForTask(task) {
     rpcUrl: process.env.HELIUS_RPC_URL ?? "https://api.devnet.solana.com",
   });
 
-  const summary = await sdk.getSummary(new PublicKey(selectedAgent.asset_id), 0);
+  const summary = await sdk.getSummary(new PublicKey(selectedAgent.asset_id));
   console.log(`   Cached Trust:     ${selectedAgent.trust_score} (${selectedAgent.feedback_count} feedbacks)`);
   console.log(`   Live On-Chain:    ${summary.averageScore} (${summary.totalFeedbacks} feedbacks)`);
 

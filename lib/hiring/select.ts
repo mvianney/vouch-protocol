@@ -92,11 +92,29 @@ export async function selectAndVerifyAgent(
   let discrepancyReason: string | undefined;
 
   try {
-    // Unfiltered on-chain read (fallback to indexer query if needed)
-    const summary = await sdk.getSummary(assetPubkey, 0);
+    // Unfiltered on-chain read with indexer fast path
+    const summary = await sdk.getSummary(assetPubkey);
 
-    const onChainScore = summary.averageScore ?? 0;
+    let onChainScore = summary.averageScore ?? 0;
     const onChainFeedbacks = summary.totalFeedbacks ?? 0;
+
+    // In devnet, ATOM quality_score calibration may remain 0 if feedback is below
+    // minimum calibration threshold. When feedbacks exist on-chain, resolve the real
+    // arithmetic average score from the indexer record or feedback manager.
+    if (onChainScore === 0 && onChainFeedbacks > 0) {
+      try {
+        const indexerUrl = process.env.INDEXER_URL ?? "https://8004-indexer-dev.qnt.sh/rest/v1";
+        const res = await fetch(`${indexerUrl}/agents?asset=eq.${assetPubkey.toBase58()}&select=raw_avg_score,feedback_count`);
+        if (res.ok) {
+          const rows = await res.json();
+          if (rows?.[0]?.raw_avg_score != null && Number(rows[0].raw_avg_score) > 0) {
+            onChainScore = Number(rows[0].raw_avg_score);
+          }
+        }
+      } catch {
+        // preserve onChainScore
+      }
+    }
 
     // Check if score or count changed meaningfully (score delta > 0.05 or count different)
     const scoreDiff = Math.abs(onChainScore - topCandidate.trust_score);
