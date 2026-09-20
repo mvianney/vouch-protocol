@@ -73,15 +73,15 @@ async function runPipelineForTask(task) {
 
   // 3. Sign Hire Request
   console.log("\n[3. Cryptographic Signature via Vouch Platform Wallet]");
-  const now = Date.now();
+  const nowSeconds = Math.floor(Date.now() / 1000);
   const hireData = {
     action: "hire_agent",
     platform: "vouch",
     taskDescription: task,
     agentAssetId: selectedAgent.asset_id,
     requesterPlatformWallet: signer.publicKey.toBase58(),
-    timestamp: now,
-    expiresAt: now + 15 * 60 * 1000,
+    timestamp: nowSeconds,
+    expiresAt: nowSeconds + 15 * 60,
   };
 
   const rawSignedPayload = sdk.sign(new PublicKey(selectedAgent.asset_id), hireData);
@@ -91,7 +91,7 @@ async function runPipelineForTask(task) {
   console.log(`   Signature (b58):  ${parsed.sig}`);
   console.log(`   Nonce:            ${parsed.nonce}`);
   console.log(`   Issued At:        ${new Date(parsed.issuedAt * 1000).toISOString()}`);
-  console.log(`   Expires At:       ${new Date(parsed.data.expiresAt).toISOString()}`);
+  console.log(`   Expires At:       ${new Date(parsed.data.expiresAt * 1000).toISOString()}`);
 
   // 4. Cryptographic verification
   const isValid = await sdk.verify(

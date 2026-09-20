@@ -21,7 +21,9 @@ export interface HirePayloadData {
   taskDescription: string;
   agentAssetId: string;
   requesterPlatformWallet: string;
+  /** Unix epoch timestamp in seconds (matches SDK issuedAt) */
   timestamp: number;
+  /** Unix epoch timestamp in seconds (validity window deadline) */
   expiresAt: number;
 }
 
@@ -59,15 +61,15 @@ export function signHireRequest(
     signer: platformSigner,
   });
 
-  const now = Date.now();
+  const nowSeconds = Math.floor(Date.now() / 1000);
   const data: HirePayloadData = {
     action: "hire_agent",
     platform: "vouch",
     taskDescription,
     agentAssetId,
     requesterPlatformWallet: platformSigner.publicKey.toBase58(),
-    timestamp: now,
-    expiresAt: now + 15 * 60 * 1000, // 15 minute validity window
+    timestamp: nowSeconds,
+    expiresAt: nowSeconds + 15 * 60, // 15 minute validity window in seconds
   };
 
   // 8004-solana SDK sign creates canonical RFC 8785 JSON with ed25519 signature
