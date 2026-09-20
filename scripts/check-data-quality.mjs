@@ -142,6 +142,33 @@ console.log(
 console.log(
   `  Searchable (desc only)    : ${searchable.toLocaleString().padStart(5)} agents → text search works`
 );
+
+// Query and display sample of agents with description
+const { data: descSamples } = await db
+  .from("agents")
+  .select("asset_id, name, description, skills")
+  .not("description", "is", null)
+  .limit(10);
+
+console.log("\n  ── Sample agents with populated descriptions ───────────");
+if (descSamples && descSamples.length > 0) {
+  for (const s of descSamples) {
+    console.log(`  • [${s.asset_id.slice(0, 10)}...] ${s.name}`);
+    console.log(`    Desc:   "${s.description}"`);
+    console.log(`    Skills: [${(s.skills || []).join(", ")}]`);
+    console.log();
+  }
+} else {
+  console.log("  (None found)");
+}
+
+// Query count of agents with a populated name
+const { count: namedCount } = await db
+  .from("agents")
+  .select("*", { count: "exact", head: true })
+  .not("name", "is", null);
+
+console.log(`  Agents with populated name: ${namedCount} / ${total.toLocaleString()}`);
 console.log(
   `  Name-only / stub          : ${(total - searchable).toLocaleString().padStart(5)} agents → sync metadata missing`
 );
