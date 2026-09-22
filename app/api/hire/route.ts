@@ -18,7 +18,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { searchAgents } from "@/lib/registry/search";
 import { selectAndVerifyAgent } from "@/lib/hiring/select";
 import { signHireRequest } from "@/lib/hiring/sign";
-import { dispatchTaskToAgent } from "@/lib/execution/dispatch";
+import { dispatchTaskToAgent, DispatchResult } from "@/lib/execution/dispatch";
+import { gradeAgentExecution } from "@/lib/grading/verify";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
     console.log(`[api/hire] Successfully generated signed hire request for ${selectedAgent.name} (${selectedAgent.asset_id})`);
 
     // Step 5: Dispatch task to the hired agent's service endpoint
-    let executionResult = null;
+    let executionResult: DispatchResult;
     if (selectedAgent.service_endpoint) {
       console.log(`[api/hire] Dispatching task to agent endpoint: ${selectedAgent.service_endpoint}`);
       executionResult = await dispatchTaskToAgent(
@@ -101,9 +102,18 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // Step 6: Return complete pipeline response
+    // Step 6: AI Grading & Ground Truth Verification
+    console.log(`[api/hire] Running AI Judge & ground truth verification for ${selectedAgent.name}...`);
+    const gradeResult = await gradeAgentExecution({
+      task: trimmedTask,
+      agentName: selectedAgent.name || "Unknown Agent",
+      dispatchResult: executionResult,
+    });
+    console.log(`[api/hire] Grading complete: score=${gradeResult.score}, passed=${gradeResult.passed}`);
+
+    // Step 7: Return complete pipeline response
     return NextResponse.json({
-      status: executionResult.success ? "completed" : "execution_failed",
+      status: gradeResult.passed ? "completed" : "rejected",
       task: trimmedTask,
       selectedAgent: {
         asset_id: selectedAgent.asset_id,
@@ -134,6 +144,16 @@ export async function POST(req: NextRequest) {
         platformSigner: signedHire.signerPublicKey,
       },
       execution: executionResult,
+      grading: {
+        score: gradeResult.score,
+        passed: gradeResult.passed,
+        summary: gradeResult.summary,
+        breakdown: gradeResult.breakdown,
+        comparison: gradeResult.comparison,
+        groundTruth: gradeResult.groundTruth,
+        gradedAt: gradeResult.gradedAt,
+        llmPowered: gradeResult.llmPowered,
+      },
       candidatesEvaluatedCount: searchResponse.results.length,
       pipelineDurationMs: searchResponse.duration_ms + (executionResult?.durationMs ?? 0),
     });

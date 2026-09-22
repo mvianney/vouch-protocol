@@ -1,3 +1,8 @@
+import dns from "node:dns";
+if (typeof dns?.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
 import { NextRequest, NextResponse } from "next/server";
 import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 

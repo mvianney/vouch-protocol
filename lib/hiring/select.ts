@@ -11,6 +11,11 @@
  *   5. If changed meaningfully, updates the decision and triggers an async background resync in Supabase.
  */
 
+import dns from "node:dns";
+if (typeof dns?.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
 import { SolanaSDK } from "8004-solana";
 import { PublicKey } from "@solana/web3.js";
 import { AgentSearchResult } from "@/lib/registry/search";
@@ -93,7 +98,7 @@ export async function selectAndVerifyAgent(
 
   try {
     // Unfiltered on-chain read with indexer fast path
-    const summary = await sdk.getSummary(assetPubkey);
+    const summary = await sdk.getSummary(assetPubkey, 0);
 
     let onChainScore = summary.averageScore ?? 0;
     const onChainFeedbacks = summary.totalFeedbacks ?? 0;
