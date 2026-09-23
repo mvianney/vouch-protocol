@@ -35,6 +35,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# env
+# env & keys
 .env.local
 .env*.local
+.vouch-evaluator.json

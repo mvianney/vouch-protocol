@@ -20,6 +20,7 @@ import { selectAndVerifyAgent } from "@/lib/hiring/select";
 import { signHireRequest } from "@/lib/hiring/sign";
 import { dispatchTaskToAgent, DispatchResult } from "@/lib/execution/dispatch";
 import { gradeAgentExecution } from "@/lib/grading/verify";
+import { submitOnChainFeedback, FeedbackSubmissionResult } from "@/lib/feedback/submit";
 
 export const dynamic = "force-dynamic";
 
@@ -111,7 +112,20 @@ export async function POST(req: NextRequest) {
     });
     console.log(`[api/hire] Grading complete: score=${gradeResult.score}, passed=${gradeResult.passed}`);
 
-    // Step 7: Return complete pipeline response
+    // Step 7: On-Chain Feedback Submission
+    console.log(`[api/hire] Submitting evaluation feedback on-chain for ${selectedAgent.name}...`);
+    const feedbackResult = await submitOnChainFeedback({
+      agentAssetId: selectedAgent.asset_id,
+      grade: gradeResult,
+      endpoint: selectedAgent.service_endpoint,
+      signedNonce: signedHire.parsedPayload.nonce,
+      taskDescription: trimmedTask,
+    });
+    console.log(
+      `[api/hire] Feedback submitted: success=${feedbackResult.success}, tx=${feedbackResult.signature ?? "none"}, score: ${feedbackResult.before.trustScore} -> ${feedbackResult.after.trustScore}, count: ${feedbackResult.before.feedbackCount} -> ${feedbackResult.after.feedbackCount}`
+    );
+
+    // Step 8: Return complete pipeline response
     return NextResponse.json({
       status: gradeResult.passed ? "completed" : "rejected",
       task: trimmedTask,
@@ -121,8 +135,8 @@ export async function POST(req: NextRequest) {
         description: selectedAgent.description,
         skills: selectedAgent.skills,
         service_endpoint: selectedAgent.service_endpoint,
-        trust_score: selectedAgent.trust_score,
-        feedback_count: selectedAgent.feedback_count,
+        trust_score: feedbackResult.after.trustScore,
+        feedback_count: feedbackResult.after.feedbackCount,
         confidence: selectedAgent.confidence,
         adjusted_score: selectedAgent.adjusted_score,
       },
@@ -153,6 +167,16 @@ export async function POST(req: NextRequest) {
         groundTruth: gradeResult.groundTruth,
         gradedAt: gradeResult.gradedAt,
         llmPowered: gradeResult.llmPowered,
+      },
+      feedbackSubmission: {
+        success: feedbackResult.success,
+        signature: feedbackResult.signature,
+        feedbackIndex: feedbackResult.feedbackIndex,
+        submittedAt: feedbackResult.submittedAt,
+        feedbackDetails: feedbackResult.feedbackDetails,
+        before: feedbackResult.before,
+        after: feedbackResult.after,
+        error: feedbackResult.error,
       },
       candidatesEvaluatedCount: searchResponse.results.length,
       pipelineDurationMs: searchResponse.duration_ms + (executionResult?.durationMs ?? 0),
