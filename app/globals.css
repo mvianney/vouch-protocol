@@ -391,3 +391,16 @@
     color: var(--purple-bright);
   }
 }
+
+@keyframes sweep-diagonal {
+  0% {
+    transform: translate(-45%, -45%);
+  }
+  50% {
+    transform: translate(25%, 25%);
+  }
+  100% {
+    transform: translate(-45%, -45%);
+  }
+}
+
