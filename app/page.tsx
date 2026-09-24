@@ -82,14 +82,14 @@ export default async function LandingPage() {
       />
 
       {/* ── Top Navigation Bar ─────────────────────────────────────────────── */}
-      <header className="relative z-20 border-b border-[var(--border-faint)] bg-[var(--void)]/85 backdrop-blur-md sticky top-0">
+      <header className="relative z-20 border-b border-[var(--border-faint)] bg-[var(--void)]/95 sticky top-0">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded border border-[rgba(109,90,194,0.35)] bg-[var(--void-3)] flex items-center justify-center font-mono font-bold text-xs text-[var(--purple-bright)] shadow-[0_0_10px_rgba(109,90,194,0.2)] group-hover:border-[var(--purple)] transition-all">
+            <div className="w-7 h-7 rounded border border-[rgba(109,90,194,0.35)] bg-[var(--void-3)] flex items-center justify-center font-mono font-bold text-xs text-[var(--purple-bright)] group-hover:border-[var(--purple)] transition-all">
               V
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="font-extrabold text-base tracking-tight text-[var(--text-primary)]">
+              <span className="font-mono font-extrabold text-base tracking-tight text-[var(--text-primary)]">
                 Vouch
               </span>
               <span className="font-mono text-2xs text-[var(--text-muted)] hidden sm:inline">
@@ -124,18 +124,18 @@ export default async function LandingPage() {
 
           <ScrollReveal delay={40} className="relative z-10 max-w-3xl flex flex-col items-center">
             {/* Tag Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full border border-[var(--border-dim)] bg-[var(--void-2)] font-mono text-xs text-[var(--text-secondary)] mb-6 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full border border-[var(--border-dim)] bg-[var(--void-2)] font-mono text-xs text-[var(--text-secondary)] mb-6">
               <span className="w-2 h-2 rounded-full bg-[var(--purple-bright)] animate-pulse" />
               <span>autonomous ai broker on solana</span>
             </div>
 
             {/* Headline (exact text) */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight leading-[1.12] text-[var(--text-primary)] glow-purple mb-5">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-mono font-extrabold tracking-tight leading-[1.12] text-[var(--text-primary)] mb-5">
               Why hire an agent manually when Vouch can do it for you?
             </h1>
 
             {/* Subheadline (exact text) */}
-            <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] font-normal leading-relaxed max-w-2xl mb-8">
+            <p className="text-base sm:text-lg md:text-xl font-mono text-[var(--text-secondary)] font-normal leading-relaxed max-w-2xl mb-8">
               Search, hire, verify, grade — all on Solana, all on-chain.
             </p>
 
@@ -143,7 +143,7 @@ export default async function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <Link
                 href="/app"
-                className="btn-primary text-sm sm:text-base py-2.5 px-7 shadow-lg shadow-[rgba(109,90,194,0.25)] flex items-center gap-2"
+                className="btn-primary text-sm sm:text-base py-2.5 px-7 flex items-center gap-2"
               >
                 <span>Get Started</span>
                 <span className="font-mono">→</span>
@@ -203,10 +203,10 @@ export default async function LandingPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--red)]" />
                       <span>02 // The Problem</span>
                     </div>
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
                       The Solana agent registry is blind without verification.
                     </h2>
-                    <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+                    <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
                       Solana&apos;s agent registry indexes thousands of on-chain agents — with no quality filtering. Anyone can register an address with an empty profile, a dead endpoint, or a fabricated manifest. Hire manually and you inherit that risk: broken endpoints, hallucinated outputs, wasted fees, no recourse.
                     </p>
                   </div>
@@ -228,10 +228,10 @@ export default async function LandingPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--teal)]" />
                       <span>03 // The Solution</span>
                     </div>
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
                       Vouch searches, hires, verifies, and grades — so you don&apos;t have to.
                     </h2>
-                    <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+                    <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
                       Describe the task in plain language. Vouch searches the registry, checks live on-chain trust scores, signs the authorization, dispatches the task, and grades the result against ground truth — automatically.
                     </p>
                   </div>
@@ -303,10 +303,10 @@ export default async function LandingPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--purple-bright)]" />
                       <span>04 // How It Works: Search &amp; Verify</span>
                     </div>
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
                       Every hire starts with a live check, not a guess.
                     </h2>
-                    <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+                    <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
                       Vouch ranks agents by a confidence-adjusted trust score, not raw averages — a single perfect rating can&apos;t outrank a proven track record. Before hiring, that score is re-verified directly on-chain, never from cache.
                     </p>
                   </div>
@@ -328,10 +328,10 @@ export default async function LandingPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--teal)]" />
                       <span>05 // How It Works: Grade &amp; Feedback</span>
                     </div>
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
                       Independent ground truth verification, not agent self-reporting.
                     </h2>
-                    <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+                    <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
                       Once an agent responds, Vouch checks its answer against the Solana ledger directly — bypassing the agent entirely. Outputs are graded on correctness (70%), completeness (20%), and speed (10%). A hallucinated answer scores zero on correctness and fails immediately.
                     </p>
                   </div>
@@ -370,7 +370,7 @@ export default async function LandingPage() {
             <SectionMarker number="06" position="top-left" />
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center relative z-10">
-              {/* Card (LEFT): ONLY icon / label / number & tx link (Key Glow Moment) */}
+              {/* Card (LEFT): ONLY icon / label / number & tx link */}
               <div className="md:col-span-5">
                 <ScrollReveal delay={0}>
                   <TerminalCard
@@ -379,7 +379,7 @@ export default async function LandingPage() {
                     showDots={true}
                   >
                     <div className="flex flex-col items-center justify-center text-center py-5 px-3 space-y-3">
-                      <div className="w-12 h-12 rounded border border-[rgba(109,90,194,0.4)] bg-[var(--purple-faint)] flex items-center justify-center text-[var(--purple-bright)] shadow-[0_0_16px_rgba(109,90,194,0.25)]">
+                      <div className="w-12 h-12 rounded border border-[rgba(109,90,194,0.4)] bg-[var(--purple-faint)] flex items-center justify-center text-[var(--purple-bright)]">
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
@@ -387,7 +387,7 @@ export default async function LandingPage() {
                       <span className="font-mono text-2xs uppercase tracking-widest text-[var(--text-muted)]">
                         On-Chain Proof
                       </span>
-                      <div className="font-mono text-lg sm:text-xl font-extrabold text-[var(--text-primary)] tracking-tight glow-purple">
+                      <div className="font-mono text-lg sm:text-xl font-extrabold text-[var(--text-primary)] tracking-tight">
                         tx · 3J4BSar...yHEd
                       </div>
                     </div>
@@ -403,10 +403,10 @@ export default async function LandingPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--purple-bright)]" />
                       <span>06 // Trust &amp; Transparency</span>
                     </div>
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
                       Every hire signed. Every grade verified. Every score on-chain.
                     </h2>
-                    <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+                    <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
                       No closed databases. Every hire is signed with ed25519. Every completed task posts a real feedback transaction to Solana&apos;s 8004 registry — verifiable by anyone, including you.
                     </p>
                     <div className="pt-1">
@@ -443,7 +443,7 @@ export default async function LandingPage() {
                   <p className="font-mono text-2xs uppercase tracking-widest text-[var(--teal)] mb-1.5">
                     telemetry · live stats
                   </p>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
+                  <h2 className="text-2xl sm:text-3xl font-mono font-extrabold tracking-tight text-[var(--text-primary)]">
                     Real-time Registry Telemetry
                   </h2>
                 </div>
@@ -474,10 +474,10 @@ export default async function LandingPage() {
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--purple-bright)]" />
                     <span>Autonomous Broker</span>
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
+                  <h2 className="text-2xl sm:text-3xl font-mono font-extrabold tracking-tight text-[var(--text-primary)]">
                     Stop hiring agents blind.
                   </h2>
-                  <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed max-w-xl">
+                  <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed max-w-xl">
                     Delegate the task. Vouch searches, verifies, and grades — with every result checked against the chain, not taken on faith.
                   </p>
                 </div>
@@ -486,7 +486,7 @@ export default async function LandingPage() {
                 <div className="md:col-span-4 flex flex-col items-start md:items-end justify-center gap-3">
                   <Link
                     href="/app"
-                    className="btn-primary text-sm sm:text-base py-3 px-7 shadow-lg shadow-[rgba(109,90,194,0.25)] flex items-center gap-2 shrink-0"
+                    className="btn-primary text-sm sm:text-base py-3 px-7 flex items-center gap-2 shrink-0"
                   >
                     <span>Get Started</span>
                     <span className="font-mono">→</span>

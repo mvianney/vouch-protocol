@@ -59,8 +59,15 @@ const config: Config = {
 
       // ─── Typography ───────────────────────────────────────────────────────
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        mono: ["var(--font-jetbrains)", "'Fira Code'", "monospace"],
+        sans: ["'Inter'", "system-ui", "-apple-system", "sans-serif"],
+        mono: [
+          "'JetBrains Mono'",
+          "'JetBrains Mono Fallback'",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Consolas",
+          "monospace",
+        ],
       },
 
       // ─── Font sizes ───────────────────────────────────────────────────────

@@ -1,9 +1,86 @@
+/* ─── Self-Hosted Font Definitions ──────────────────────────────────────── */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ─── CSS Custom Properties (design tokens) ─────────────────────────────── */
 :root {
+  /* Fonts */
+  --font-jetbrains: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, Consolas, monospace;
+  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+
   /* Background */
   --void:       #0a0a0f;
   --void-1:     #0e0e17;
@@ -57,7 +134,7 @@
   html {
     background-color: var(--void);
     color: var(--text-primary);
-    font-family: var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-jetbrains);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -66,11 +143,16 @@
   body {
     min-height: 100dvh;
     background-color: var(--void);
+    font-family: var(--font-jetbrains);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-jetbrains);
   }
 
   /* All data values always use mono — enforce via semantic class */
   .data, code, kbd, pre, samp {
-    font-family: var(--font-jetbrains), 'Fira Code', monospace;
+    font-family: var(--font-jetbrains);
   }
 
   /* Scrollbar styling */
@@ -183,9 +265,8 @@
   }
 
   .stat-label {
-    @apply text-xs font-semibold uppercase tracking-widest;
+    @apply text-xs font-semibold uppercase tracking-widest font-mono;
     color: var(--text-muted);
-    font-family: var(--font-inter), system-ui, sans-serif;
   }
 
   .stat-value {
@@ -333,7 +414,7 @@
 
   /* ── Button base ──────────────────────────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-mono font-semibold text-sm
            transition-all duration-150 cursor-pointer select-none;
     background: var(--purple-muted);
     color: var(--text-primary);
@@ -343,10 +424,10 @@
   .btn-primary:hover {
     background: var(--purple);
     border-color: rgba(109,90,194,0.7);
-    box-shadow: 0 0 20px rgba(109,90,194,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
   }
   .btn-ghost {
-    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-mono font-semibold text-sm
            transition-all duration-150 cursor-pointer select-none;
     color: var(--text-secondary);
     border: 1px solid var(--border-dim);
@@ -374,14 +455,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     vertical-align: bottom;
-  }
-
-  /* Glow effects */
-  .glow-purple {
-    text-shadow: 0 0 20px rgba(109, 90, 194, 0.6);
-  }
-  .glow-teal {
-    text-shadow: 0 0 20px rgba(45, 212, 191, 0.5);
   }
 
   /* Caret blink */
