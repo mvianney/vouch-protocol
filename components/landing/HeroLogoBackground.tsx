@@ -2,20 +2,18 @@
 
 import React, { useEffect, useRef } from "react";
 
+interface HeroLogoProps {
+  className?: string;
+}
+
 /**
- * HeroLogoBackground
+ * HeroLogo
  *
- * Renders the real brand logo (/brand/vouch-logo.png) as a low-res pixelated
- * background graphic with a continuous diagonal light-sweep animation.
- *
- * Techniques:
- *   - Canvas-based downsampling to 64x64 and crisp nearest-neighbor upscale
- *     so the actual metallic 3D V logo is rendered as chunky retro-terminal pixels.
- *   - Radial vignette mask so the edges smoothly dissolve into the void background.
- *   - GPU-accelerated diagonal light-sweep gradient animating across the logo.
- *   - Subtle opacity (28-34%) ensuring foreground headline legibility.
+ * Contained, modest-scale visual widget displaying the real brand logo
+ * (/brand/vouch-logo.png) with canvas-based retro pixelation and
+ * a continuous diagonal light-sweep animation.
  */
-export function HeroLogoBackground() {
+export function HeroLogo({ className = "" }: HeroLogoProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -48,41 +46,55 @@ export function HeroLogoBackground() {
 
   return (
     <div
-      aria-hidden="true"
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0 overflow-hidden flex items-center justify-center opacity-30 md:opacity-35"
-      style={{
-        width: "min(520px, 88vw)",
-        height: "min(520px, 88vw)",
-        maskImage: "radial-gradient(circle at 50% 50%, black 42%, transparent 72%)",
-        WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 42%, transparent 72%)",
-      }}
+      className={`relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-[340px] aspect-square rounded-2xl border border-[var(--border-dim)] bg-[var(--void-2)] p-4 sm:p-5 flex flex-col justify-between overflow-hidden select-none ${className}`}
     >
-      <div className="relative w-full h-full flex items-center justify-center">
-        {/* Pixelated Canvas of the Real Logo */}
+      {/* Top Header Label & Dots */}
+      <div className="flex items-center justify-between pointer-events-none z-20">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[#ff5f57]/80" />
+          <span className="w-2 h-2 rounded-full bg-[#febc2e]/80" />
+          <span className="w-2 h-2 rounded-full bg-[#28c840]/80" />
+        </div>
+        <span className="font-mono text-2xs text-[var(--text-muted)] tracking-wider">
+          vouch.asset · 8004
+        </span>
+      </div>
+
+      {/* Centered Pixelated Logo Canvas with Light Sweep */}
+      <div className="relative w-full flex-1 flex items-center justify-center my-2 overflow-hidden">
         <canvas
           ref={canvasRef}
           width={512}
           height={512}
-          className="w-full h-full object-contain [image-rendering:pixelated] [image-rendering:crisp-edges]"
+          className="w-full h-full object-contain [image-rendering:pixelated] [image-rendering:crisp-edges] relative z-10 opacity-90"
         />
 
         {/* Diagonal Light-Sweep Gradient Animation */}
         <div
-          className="absolute inset-0 pointer-events-none mix-blend-screen"
-          style={{
-            overflow: "hidden",
-          }}
+          className="absolute inset-0 pointer-events-none mix-blend-screen z-20 overflow-hidden"
         >
           <div
             className="w-[200%] h-[200%] absolute -top-1/2 -left-1/2"
             style={{
               background:
-                "linear-gradient(115deg, transparent 20%, rgba(109,90,194,0.1) 40%, rgba(139,115,224,0.45) 48%, rgba(94,234,212,0.6) 51%, rgba(139,115,224,0.45) 54%, rgba(109,90,194,0.1) 60%, transparent 80%)",
+                "linear-gradient(115deg, transparent 25%, rgba(109,90,194,0.12) 42%, rgba(139,115,224,0.45) 48%, rgba(94,234,212,0.55) 51%, rgba(139,115,224,0.45) 54%, rgba(109,90,194,0.12) 60%, transparent 75%)",
               animation: "sweep-diagonal 7s ease-in-out infinite",
             }}
           />
         </div>
       </div>
+
+      {/* Bottom telemetry footer */}
+      <div className="flex items-center justify-between pointer-events-none z-20 font-mono text-[10px] text-[var(--text-muted)] pt-1.5 border-t border-[var(--border-faint)]">
+        <span className="text-[var(--teal)] flex items-center gap-1.5">
+          <span className="live-dot" />
+          <span>registry.verified</span>
+        </span>
+        <span className="text-[var(--text-dim)]">solana:devnet</span>
+      </div>
     </div>
   );
 }
+
+// Backwards compatibility alias
+export { HeroLogo as HeroLogoBackground };

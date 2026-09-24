@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TerminalCard } from "@/components/ui/TerminalCard";
 import { SectionMarker } from "@/components/ui/SectionMarker";
-import { HeroLogoBackground } from "@/components/landing/HeroLogoBackground";
+import { HeroLogo } from "@/components/landing/HeroLogoBackground";
 import { ScrollReveal } from "@/components/landing/ScrollReveal";
 import { LiveStatsSection, LiveStatsData } from "@/components/landing/LiveStatsSection";
 import { supabaseAdmin } from "@/lib/db/supabase";
@@ -112,53 +112,74 @@ export default async function LandingPage() {
         </div>
       </header>
 
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 1. HERO SECTION (Asymmetric Two-Column with Grid & Atmosphere Dome) */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section className="relative isolate overflow-hidden pt-12 pb-14 md:pt-16 md:pb-20 border-b border-[var(--border-faint)]">
+        {/* Subtle Background Grid across Hero (Graph paper texture) */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-full pointer-events-none select-none -z-10 overflow-hidden bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_65%_at_50%_25%,#000_50%,transparent_100%)]"
+        />
+
+        {/* Soft Radial Gradient 'Atmosphere' Dome Shape near bottom of hero */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none select-none absolute left-1/2 top-[calc(100%-4.5rem)] sm:top-[calc(100%-6rem)] md:top-[calc(100%-7.5rem)] h-[26rem] sm:h-[32rem] md:h-[38rem] w-[64rem] sm:w-[80rem] md:w-[96rem] max-w-[140vw] -translate-x-1/2 rounded-[100%] border border-[rgba(109,90,194,0.3)] bg-[radial-gradient(closest-side,var(--void)_76%,rgba(109,90,194,0.14)_88%,rgba(238,235,255,0.18)_98%,transparent_100%)] opacity-75 -z-10"
+        />
+
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 lg:gap-14 items-center">
+            {/* Left Column: Contained, Modest-Scale Vouch Logo */}
+            <div className="md:col-span-5 flex items-center justify-center md:justify-start">
+              <ScrollReveal delay={0}>
+                <HeroLogo />
+              </ScrollReveal>
+            </div>
+
+            {/* Right Column: Left-Aligned Text Content */}
+            <div className="md:col-span-7 flex flex-col items-start text-left">
+              <ScrollReveal delay={60}>
+                {/* Tag Badge */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-dim)] bg-[var(--void-2)] font-mono text-xs text-[var(--text-secondary)] mb-5">
+                  <span className="w-2 h-2 rounded-full bg-[var(--purple-bright)] animate-pulse" />
+                  <span>autonomous ai broker on solana</span>
+                </div>
+
+                {/* Headline (exact text, flat solid color, zero text-shadow) */}
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.65rem] font-mono font-extrabold tracking-tight leading-[1.15] text-[var(--text-primary)] mb-4">
+                  Why hire an agent manually when Vouch can do it for you?
+                </h1>
+
+                {/* Subheadline (exact text, font-mono) */}
+                <p className="text-sm sm:text-base md:text-lg font-mono text-[var(--text-secondary)] font-normal leading-relaxed max-w-xl mb-7">
+                  Search, hire, verify, grade — all on Solana, all on-chain.
+                </p>
+
+                {/* Action Buttons (left-aligned) */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/app"
+                    className="btn-primary text-sm sm:text-base py-2.5 px-6 flex items-center gap-2"
+                  >
+                    <span>Get Started</span>
+                    <span className="font-mono">→</span>
+                  </Link>
+                  <a
+                    href="#how-it-works"
+                    className="btn-ghost text-xs sm:text-sm py-2.5 px-5 font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                  >
+                    Explore Mechanism ↓
+                  </a>
+                </div>
+              </ScrollReveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Page Content Container ──────────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-6 relative z-10">
-
-        {/* ─────────────────────────────────────────────────────────────────── */}
-        {/* 1. HERO SECTION                                                     */}
-        {/* ─────────────────────────────────────────────────────────────────── */}
-        <section className="relative pt-14 pb-10 md:pt-20 md:pb-14 text-center flex flex-col items-center justify-center">
-          {/* Real V-Logo Pixelated with Diagonal Light-Sweep Animation */}
-          <HeroLogoBackground />
-
-          <ScrollReveal delay={40} className="relative z-10 max-w-3xl flex flex-col items-center">
-            {/* Tag Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full border border-[var(--border-dim)] bg-[var(--void-2)] font-mono text-xs text-[var(--text-secondary)] mb-6">
-              <span className="w-2 h-2 rounded-full bg-[var(--purple-bright)] animate-pulse" />
-              <span>autonomous ai broker on solana</span>
-            </div>
-
-            {/* Headline (exact text) */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-mono font-extrabold tracking-tight leading-[1.12] text-[var(--text-primary)] mb-5">
-              Why hire an agent manually when Vouch can do it for you?
-            </h1>
-
-            {/* Subheadline (exact text) */}
-            <p className="text-base sm:text-lg md:text-xl font-mono text-[var(--text-secondary)] font-normal leading-relaxed max-w-2xl mb-8">
-              Search, hire, verify, grade — all on Solana, all on-chain.
-            </p>
-
-            {/* Get Started Button */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <Link
-                href="/app"
-                className="btn-primary text-sm sm:text-base py-2.5 px-7 flex items-center gap-2"
-              >
-                <span>Get Started</span>
-                <span className="font-mono">→</span>
-              </Link>
-              <a
-                href="#how-it-works"
-                className="btn-ghost text-xs sm:text-sm py-2.5 px-5 font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-              >
-                Explore Mechanism ↓
-              </a>
-            </div>
-          </ScrollReveal>
-        </section>
-
-        <div className="vouch-divider !my-6 md:!my-8" />
 
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* 2. ALTERNATING FEATURE SECTIONS (Sections 2 through 6)              */}
