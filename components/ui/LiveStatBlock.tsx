@@ -7,7 +7,7 @@ interface LiveStatBlockProps {
   /** Short label describing the metric, e.g. "Trust Score" */
   label: string;
   /** The data value — always rendered in monospace */
-  value: string | number;
+  value: React.ReactNode;
   /** Optional unit/suffix displayed after the value, e.g. "%" or "SOL" */
   unit?: string;
   /** Whether to show the live status indicator */
