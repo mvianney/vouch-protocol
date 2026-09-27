@@ -138,12 +138,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   body {
     min-height: 100dvh;
     background-color: var(--void);
     font-family: var(--font-jetbrains);
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -188,14 +190,12 @@
     @apply relative flex flex-col overflow-hidden rounded-lg;
     background: var(--void-2);
     border: 1px solid var(--border-dim);
-    box-shadow: 0 0 0 0 transparent,
-                0 4px 32px rgba(109, 90, 194, 0.08);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: none;
+    transition: border-color 0.2s ease;
   }
   .terminal-card:hover {
     border-color: var(--border);
-    box-shadow: 0 0 0 1px rgba(109,90,194,0.18),
-                0 8px 40px rgba(109, 90, 194, 0.14);
+    box-shadow: none;
   }
 
   /* Shine overlay */
@@ -211,24 +211,6 @@
     border-bottom: 1px solid var(--border-faint);
     min-height: 36px;
   }
-
-  .terminal-dots {
-    @apply flex items-center gap-1.5 shrink-0;
-  }
-  .terminal-dots::before,
-  .terminal-dots::after,
-  .terminal-dots span {
-    content: '';
-    @apply block w-2.5 h-2.5 rounded-full;
-  }
-  /* Simulated via sibling elements — see TerminalCard.tsx component */
-
-  .terminal-dot {
-    @apply w-2.5 h-2.5 rounded-full shrink-0;
-  }
-  .terminal-dot-red    { background: #ff5f57; }
-  .terminal-dot-yellow { background: #febc2e; }
-  .terminal-dot-green  { background: #28c840; }
 
   .terminal-label {
     @apply font-mono tracking-wider uppercase;
@@ -287,14 +269,12 @@
   .live-dot {
     @apply w-1.5 h-1.5 rounded-full shrink-0;
     background: var(--teal);
-    box-shadow: 0 0 6px var(--teal);
     animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;
   }
 
   .live-dot-purple {
     @apply live-dot;
     background: var(--purple);
-    box-shadow: 0 0 6px var(--purple);
   }
 
   /* ── Comparison Table ─────────────────────────────────────────────────── */
@@ -327,13 +307,12 @@
     color: var(--text-primary);
   }
 
-  /* Positive delta — teal */
+  /* Positive delta: teal */
   .delta-pos {
     color: var(--teal) !important;
   }
-  .delta-pos::before { content: '+'; }
 
-  /* Negative delta — red */
+  /* Negative delta: red */
   .delta-neg {
     color: var(--red) !important;
   }
@@ -419,12 +398,12 @@
     background: var(--purple-muted);
     color: var(--text-primary);
     border: 1px solid rgba(109,90,194,0.4);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    box-shadow: none;
   }
   .btn-primary:hover {
     background: var(--purple);
     border-color: rgba(109,90,194,0.7);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow: none;
   }
   .btn-ghost {
     @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-mono font-semibold text-sm

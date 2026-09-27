@@ -20,6 +20,7 @@ import { SolanaSDK } from "8004-solana";
 import { PublicKey } from "@solana/web3.js";
 import { AgentSearchResult } from "@/lib/registry/search";
 import { supabaseAdmin } from "@/lib/db/supabase";
+import { withRpcRetry } from "@/lib/blockchain/rpc";
 
 export interface LiveVerificationDetails {
   cachedTrustScore: number;
@@ -77,28 +78,26 @@ export async function selectAndVerifyAgent(
   const topCandidate = { ...candidates[0] };
   const assetPubkey = new PublicKey(topCandidate.asset_id);
 
-  // Initialize SDK with devnet indexer fallback for summary lookups
-  const indexerUrl =
-    process.env.INDEXER_URL ?? "https://8004-indexer-dev.qnt.sh/rest/v1";
-
-  const sdk = new SolanaSDK({
-    cluster: "devnet",
-    indexerUrl,
-    rpcUrl:
-      process.env.HELIUS_RPC_URL ??
-      process.env.NEXT_PUBLIC_SOLANA_RPC_URL ??
-      "https://api.devnet.solana.com",
-  });
-
-  // Query live summary directly from devnet
+  // Query live summary directly from devnet with RPC failover and retry
   let liveScore = topCandidate.trust_score;
   let liveFeedbacks = topCandidate.feedback_count;
   let hasChanged = false;
   let discrepancyReason: string | undefined;
 
   try {
-    // Unfiltered on-chain read with indexer fast path
-    const summary = await sdk.getSummary(assetPubkey, 0);
+    const summary = await withRpcRetry(
+      async (_connection, rpcUrl) => {
+        const indexerUrl =
+          process.env.INDEXER_URL ?? "https://8004-indexer-dev.qnt.sh/rest/v1";
+        const sdk = new SolanaSDK({
+          cluster: "devnet",
+          indexerUrl,
+          rpcUrl,
+        });
+        return await sdk.getSummary(assetPubkey, 0);
+      },
+      { maxRetries: 2, initialBackoffMs: 800, label: "select-verify" }
+    );
 
     let onChainScore = summary.averageScore ?? 0;
     const onChainFeedbacks = summary.totalFeedbacks ?? 0;
@@ -146,8 +145,8 @@ export async function selectAndVerifyAgent(
     liveScore = onChainScore;
     liveFeedbacks = onChainFeedbacks;
   } catch (err: any) {
-    console.error(`[select] Failed live on-chain check for ${topCandidate.asset_id}: ${err.message}`);
-    discrepancyReason = `Live check failed (${err.message}). Using cached data.`;
+    console.error(`[select] Failed live on-chain check for ${topCandidate.asset_id} after retries: ${err.message}`);
+    discrepancyReason = `Live check timed out (${err.message}). Using cached data.`;
   }
 
   return {

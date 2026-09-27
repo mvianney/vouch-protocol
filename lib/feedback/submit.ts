@@ -23,6 +23,7 @@ if (typeof dns?.setDefaultResultOrder === "function") {
 import { SolanaSDK } from "8004-solana";
 import { PublicKey } from "@solana/web3.js";
 import { getOrCreateEvaluatorKeypair } from "@/lib/blockchain/solana";
+import { withRpcRetry } from "@/lib/blockchain/rpc";
 import { supabaseAdmin } from "@/lib/db/supabase";
 import { GradeResult } from "@/lib/grading/verify";
 
@@ -72,26 +73,21 @@ export async function submitOnChainFeedback(
   const evaluatorKeypair = await getOrCreateEvaluatorKeypair();
   const assetPubkey = new PublicKey(agentAssetId);
 
-  const rpcUrl =
-    process.env.HELIUS_RPC_URL ??
-    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ??
-    "https://api.devnet.solana.com";
   const indexerUrl =
     process.env.INDEXER_URL ?? "https://8004-indexer-dev.qnt.sh/rest/v1";
 
-  const sdk = new SolanaSDK({
-    cluster: "devnet",
-    signer: evaluatorKeypair,
-    rpcUrl,
-    indexerUrl,
-  });
-
-  // 1. Capture on-chain baseline before submission
+  // 1. Capture on-chain baseline before submission with RPC retry
   let beforeTrustScore = 0;
   let beforeFeedbackCount = 0;
 
   try {
-    const beforeSummary = await sdk.getSummary(assetPubkey, 0);
+    const beforeSummary = await withRpcRetry(
+      async (_conn, rpcUrl) => {
+        const sdk = new SolanaSDK({ cluster: "devnet", rpcUrl, indexerUrl });
+        return await sdk.getSummary(assetPubkey, 0);
+      },
+      { maxRetries: 2, initialBackoffMs: 800, label: "feedback-pre-summary" }
+    );
     beforeTrustScore = beforeSummary.averageScore ?? 0;
     beforeFeedbackCount = beforeSummary.totalFeedbacks ?? 0;
   } catch (err: any) {
@@ -123,32 +119,31 @@ export async function submitOnChainFeedback(
   let feedbackIndexNum: number | undefined;
 
   try {
-    const txResult: any = await sdk.giveFeedback(assetPubkey, {
-      value: feedbackDetails.value,
-      score: feedbackDetails.score,
-      tag1: feedbackDetails.tag1,
-      tag2: feedbackDetails.tag2,
-      endpoint: feedbackDetails.endpoint,
-      feedbackUri: feedbackDetails.feedbackUri,
-    });
+    const txResult: any = await withRpcRetry(
+      async (_conn, rpcUrl) => {
+        const sdk = new SolanaSDK({
+          cluster: "devnet",
+          signer: evaluatorKeypair,
+          rpcUrl,
+          indexerUrl,
+        });
 
-    if (!txResult?.success && !txResult?.signature) {
-      const errMsg = txResult?.error || "Transaction failed without signature";
-      console.error(`[feedback] Transaction error: ${errMsg}`);
-      return {
-        success: false,
-        submittedAt,
-        feedbackDetails,
-        before: { trustScore: beforeTrustScore, feedbackCount: beforeFeedbackCount },
-        after: {
-          trustScore: beforeTrustScore,
-          feedbackCount: beforeFeedbackCount,
-          hasChanged: false,
-          verifiedOnChain: false,
-        },
-        error: errMsg,
-      };
-    }
+        const res: any = await sdk.giveFeedback(assetPubkey, {
+          value: feedbackDetails.value,
+          score: feedbackDetails.score,
+          tag1: feedbackDetails.tag1,
+          tag2: feedbackDetails.tag2,
+          endpoint: feedbackDetails.endpoint,
+          feedbackUri: feedbackDetails.feedbackUri,
+        });
+
+        if (!res?.success && !res?.signature) {
+          throw new Error(res?.error || "Transaction failed without signature");
+        }
+        return res;
+      },
+      { maxRetries: 2, initialBackoffMs: 1200, label: "feedback-tx-submit" }
+    );
 
     txSignature = txResult.signature;
     if (txResult.feedbackIndex !== undefined) {
@@ -178,13 +173,14 @@ export async function submitOnChainFeedback(
   let afterFeedbackCount = beforeFeedbackCount;
   let verifiedOnChain = false;
 
-  const maxWaitMs = 20000;
+  const maxWaitMs = 12000;
   const pollIntervalMs = 1500;
   const startWait = Date.now();
+  const verifySdk = new SolanaSDK({ cluster: "devnet", indexerUrl });
 
   while (Date.now() - startWait < maxWaitMs) {
     try {
-      const afterSummary = await sdk.getSummary(assetPubkey, 0);
+      const afterSummary = await verifySdk.getSummary(assetPubkey, 0);
       const newCount = afterSummary.totalFeedbacks ?? 0;
       const newScore = afterSummary.averageScore ?? 0;
 

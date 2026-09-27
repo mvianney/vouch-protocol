@@ -38,7 +38,6 @@ const dotColorStyle: Record<LiveDotColor, React.CSSProperties> = {
   purple: {},
   red: {
     background: "var(--red)",
-    boxShadow: "0 0 6px var(--red)",
   },
 };
 

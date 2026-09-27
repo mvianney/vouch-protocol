@@ -46,51 +46,46 @@ export function HeroLogo({ className = "" }: HeroLogoProps) {
 
   return (
     <div
-      className={`relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-[340px] aspect-square rounded-2xl border border-[var(--border-dim)] bg-[var(--void-2)] p-4 sm:p-5 flex flex-col justify-between overflow-hidden select-none ${className}`}
+      className={`relative w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-[340px] lg:h-[340px] aspect-square flex items-center justify-center select-none pointer-events-none ${className}`}
     >
-      {/* Top Header Label & Dots */}
-      <div className="flex items-center justify-between pointer-events-none z-20">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#ff5f57]/80" />
-          <span className="w-2 h-2 rounded-full bg-[#febc2e]/80" />
-          <span className="w-2 h-2 rounded-full bg-[#28c840]/80" />
-        </div>
-        <span className="font-mono text-2xs text-[var(--text-muted)] tracking-wider">
-          vouch.asset · 8004
-        </span>
-      </div>
+      {/* Soft ambient radial glow directly around/behind the mascot logo */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(139,115,224,0.28)_0%,rgba(109,90,194,0.15)_45%,transparent_70%)] blur-xl pointer-events-none"
+      />
 
-      {/* Centered Pixelated Logo Canvas with Light Sweep */}
-      <div className="relative w-full flex-1 flex items-center justify-center my-2 overflow-hidden">
+      {/* Floating Mascot Logo with Drop-Shadow Glow directly on the image */}
+      <div
+        className="relative w-full h-full flex items-center justify-center"
+        style={{
+          filter: "drop-shadow(0 0 28px rgba(139, 115, 224, 0.45)) drop-shadow(0 0 10px rgba(109, 90, 194, 0.3))",
+        }}
+      >
+        {/* Pixelated Canvas of the Real Logo */}
         <canvas
           ref={canvasRef}
           width={512}
           height={512}
-          className="w-full h-full object-contain [image-rendering:pixelated] [image-rendering:crisp-edges] relative z-10 opacity-90"
+          className="w-full h-full object-contain [image-rendering:pixelated] [image-rendering:crisp-edges] relative z-10"
         />
 
         {/* Diagonal Light-Sweep Gradient Animation */}
         <div
           className="absolute inset-0 pointer-events-none mix-blend-screen z-20 overflow-hidden"
+          style={{
+            maskImage: "radial-gradient(circle at 50% 50%, black 50%, transparent 75%)",
+            WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 50%, transparent 75%)",
+          }}
         >
           <div
             className="w-[200%] h-[200%] absolute -top-1/2 -left-1/2"
             style={{
               background:
-                "linear-gradient(115deg, transparent 25%, rgba(109,90,194,0.12) 42%, rgba(139,115,224,0.45) 48%, rgba(94,234,212,0.55) 51%, rgba(139,115,224,0.45) 54%, rgba(109,90,194,0.12) 60%, transparent 75%)",
+                "linear-gradient(115deg, transparent 25%, rgba(109,90,194,0.15) 42%, rgba(139,115,224,0.5) 48%, rgba(94,234,212,0.65) 51%, rgba(139,115,224,0.5) 54%, rgba(109,90,194,0.15) 60%, transparent 75%)",
               animation: "sweep-diagonal 7s ease-in-out infinite",
             }}
           />
         </div>
-      </div>
-
-      {/* Bottom telemetry footer */}
-      <div className="flex items-center justify-between pointer-events-none z-20 font-mono text-[10px] text-[var(--text-muted)] pt-1.5 border-t border-[var(--border-faint)]">
-        <span className="text-[var(--teal)] flex items-center gap-1.5">
-          <span className="live-dot" />
-          <span>registry.verified</span>
-        </span>
-        <span className="text-[var(--text-dim)]">solana:devnet</span>
       </div>
     </div>
   );

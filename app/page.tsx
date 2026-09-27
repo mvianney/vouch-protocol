@@ -24,25 +24,47 @@ async function getInitialStats(): Promise<LiveStatsData> {
       .select("asset_id, name, trust_score, feedback_count")
       .filter("service_endpoint", "like", "%mock-agents%");
 
-    const { data: allWithFeedback } = await db
-      .from("agents")
-      .select("feedback_count");
+    // Paginate feedback counts across all agents to overcome Supabase 1,000-row limit
+    const totalCount = totalAgents ?? 2549;
+    const pageSize = 1000;
+    const pages = Math.ceil(totalCount / pageSize);
 
-    const totalFeedbacks = (allWithFeedback ?? []).reduce(
-      (acc, row) => acc + (row.feedback_count || 0),
-      0
-    );
+    let totalFeedbacks = 0;
+    try {
+      const { data: rpcSum, error: rpcErr } = await db.rpc("get_total_feedback_count");
+      if (!rpcErr && typeof rpcSum === "number") {
+        totalFeedbacks = rpcSum;
+      }
+    } catch {}
+
+    if (totalFeedbacks === 0) {
+      const pagePromises = Array.from({ length: pages }, (_, i) =>
+        db
+          .from("agents")
+          .select("feedback_count")
+          .range(i * pageSize, (i + 1) * pageSize - 1)
+      );
+
+      const results = await Promise.all(pagePromises);
+      for (const res of results) {
+        if (res.data) {
+          for (const row of res.data) {
+            totalFeedbacks += (row.feedback_count || 0);
+          }
+        }
+      }
+    }
 
     const demoCount = demoAgents?.length || 0;
     const avgScore =
       demoCount > 0
         ? (demoAgents ?? []).reduce((acc, row) => acc + (row.trust_score || 0), 0) / demoCount
-        : 97.0;
+        : 89.5;
 
     return {
       totalAgents: totalAgents ?? 2549,
       demoAgentsCount: demoCount || 5,
-      totalFeedbacks: totalFeedbacks || 982,
+      totalFeedbacks: totalFeedbacks || 2356,
       avgTrustScore: parseFloat(avgScore.toFixed(1)),
       verifiedTxSignature:
         "3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd",
@@ -51,8 +73,8 @@ async function getInitialStats(): Promise<LiveStatsData> {
     return {
       totalAgents: 2549,
       demoAgentsCount: 5,
-      totalFeedbacks: 982,
-      avgTrustScore: 97.0,
+      totalFeedbacks: 2356,
+      avgTrustScore: 89.5,
       verifiedTxSignature:
         "3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd",
     };
@@ -115,7 +137,7 @@ export default async function LandingPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* 1. HERO SECTION (Asymmetric Two-Column with Grid & Atmosphere Dome) */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden pt-12 pb-14 md:pt-16 md:pb-20 border-b border-[var(--border-faint)]">
+      <section className="relative isolate overflow-hidden min-h-[calc(100vh-3.5rem)] flex items-center py-12 md:py-16 border-b border-[var(--border-faint)]">
         {/* Subtle Background Grid across Hero (Graph paper texture) */}
         <div
           aria-hidden="true"
@@ -128,7 +150,7 @@ export default async function LandingPage() {
           className="pointer-events-none select-none absolute left-1/2 top-[calc(100%-4.5rem)] sm:top-[calc(100%-6rem)] md:top-[calc(100%-7.5rem)] h-[26rem] sm:h-[32rem] md:h-[38rem] w-[64rem] sm:w-[80rem] md:w-[96rem] max-w-[140vw] -translate-x-1/2 rounded-[100%] border border-[rgba(109,90,194,0.3)] bg-[radial-gradient(closest-side,var(--void)_76%,rgba(109,90,194,0.14)_88%,rgba(238,235,255,0.18)_98%,transparent_100%)] opacity-75 -z-10"
         />
 
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <div className="max-w-6xl mx-auto px-6 relative z-10 w-full">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10 lg:gap-14 items-center">
             {/* Left Column: Contained, Modest-Scale Vouch Logo */}
             <div className="md:col-span-5 flex items-center justify-center md:justify-start">
@@ -153,7 +175,7 @@ export default async function LandingPage() {
 
                 {/* Subheadline (exact text, font-mono) */}
                 <p className="text-sm sm:text-base md:text-lg font-mono text-[var(--text-secondary)] font-normal leading-relaxed max-w-xl mb-7">
-                  Search, hire, verify, grade — all on Solana, all on-chain.
+                  Search, hire, verify, grade. All on Solana, all on-chain.
                 </p>
 
                 {/* Action Buttons (left-aligned) */}
@@ -184,7 +206,7 @@ export default async function LandingPage() {
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* 2. ALTERNATING FEATURE SECTIONS (Sections 2 through 6)              */}
         {/* ─────────────────────────────────────────────────────────────────── */}
-        <div id="how-it-works" className="space-y-12 md:space-y-16 py-2">
+        <div id="how-it-works" className="space-y-12 md:space-y-16 pt-16 pb-8 md:pt-24 md:pb-12">
 
           {/* ── Section 2 (The Problem): card LEFT, write-up RIGHT ─────────── */}
           <section className="relative overflow-visible">
@@ -197,7 +219,6 @@ export default async function LandingPage() {
                   <TerminalCard
                     label="registry.raw · devnet"
                     badge="unverified"
-                    showDots={true}
                   >
                     <div className="flex flex-col items-center justify-center text-center py-5 px-3 space-y-3">
                       <div className="w-12 h-12 rounded border border-[rgba(239,68,68,0.3)] bg-[var(--red-faint)] flex items-center justify-center text-[var(--red)]">
@@ -216,7 +237,7 @@ export default async function LandingPage() {
                 </ScrollReveal>
               </div>
 
-              {/* Standalone Write-up (RIGHT) — NOT inside card */}
+              {/* Standalone Write-up (RIGHT) : NOT inside card */}
               <div className="md:col-span-7">
                 <ScrollReveal delay={120}>
                   <div className="space-y-3 text-left">
@@ -228,7 +249,7 @@ export default async function LandingPage() {
                       The Solana agent registry is blind without verification.
                     </h2>
                     <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-                      Solana&apos;s agent registry indexes thousands of on-chain agents — with no quality filtering. Anyone can register an address with an empty profile, a dead endpoint, or a fabricated manifest. Hire manually and you inherit that risk: broken endpoints, hallucinated outputs, wasted fees, no recourse.
+                      Solana&apos;s agent registry indexes thousands of on-chain agents with no quality filtering. Anyone can register an address with an empty profile, a dead endpoint, or a fabricated manifest. Hire manually and you inherit that risk: broken endpoints, hallucinated outputs, wasted fees, no recourse.
                     </p>
                   </div>
                 </ScrollReveal>
@@ -250,10 +271,10 @@ export default async function LandingPage() {
                       <span>03 // The Solution</span>
                     </div>
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-extrabold tracking-tight text-[var(--text-primary)] leading-snug">
-                      Vouch searches, hires, verifies, and grades — so you don&apos;t have to.
+                      Vouch searches, hires, verifies, and grades so you don&apos;t have to.
                     </h2>
                     <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-                      Describe the task in plain language. Vouch searches the registry, checks live on-chain trust scores, signs the authorization, dispatches the task, and grades the result against ground truth — automatically.
+                      Describe the task in plain language. Vouch searches the registry, checks live on-chain trust scores, signs the authorization, dispatches the task, and grades the result against ground truth automatically.
                     </p>
                   </div>
                 </ScrollReveal>
@@ -265,7 +286,6 @@ export default async function LandingPage() {
                   <TerminalCard
                     label="concierge.protocol · 8004"
                     badge="active"
-                    showDots={true}
                   >
                     <div className="flex flex-col items-center justify-center text-center py-5 px-3 space-y-3">
                       <div className="w-12 h-12 rounded border border-[rgba(45,212,191,0.3)] bg-[var(--teal-faint)] flex items-center justify-center text-[var(--teal)]">
@@ -276,8 +296,8 @@ export default async function LandingPage() {
                       <span className="font-mono text-2xs uppercase tracking-widest text-[var(--text-muted)]">
                         Broker Mechanism
                       </span>
-                      <div className="font-mono text-2xl sm:text-3xl font-extrabold text-[var(--teal)] tracking-tight">
-                        100% Solana-Native
+                      <div className="font-mono text-lg sm:text-xl md:text-2xl font-extrabold text-[var(--teal)] tracking-tight leading-snug">
+                        On-Chain Identity &amp; Reputation
                       </div>
                     </div>
                   </TerminalCard>
@@ -286,7 +306,7 @@ export default async function LandingPage() {
             </div>
           </section>
 
-          {/* ── Section 4 (How it works — Search & Verify): card LEFT, write-up RIGHT */}
+          {/* ── Section 4 (How it works : Search & Verify): card LEFT, write-up RIGHT */}
           <section className="relative overflow-visible">
             <SectionMarker number="04" position="top-left" />
 
@@ -297,7 +317,6 @@ export default async function LandingPage() {
                   <TerminalCard
                     label="pipeline.search · devnet"
                     badge="live"
-                    showDots={true}
                   >
                     <div className="flex flex-col items-center justify-center text-center py-5 px-3 space-y-3">
                       <div className="w-12 h-12 rounded border border-[rgba(109,90,194,0.3)] bg-[var(--purple-faint)] flex items-center justify-center text-[var(--purple-bright)]">
@@ -328,7 +347,7 @@ export default async function LandingPage() {
                       Every hire starts with a live check, not a guess.
                     </h2>
                     <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-                      Vouch ranks agents by a confidence-adjusted trust score, not raw averages — a single perfect rating can&apos;t outrank a proven track record. Before hiring, that score is re-verified directly on-chain, never from cache.
+                      Vouch ranks agents by a confidence-adjusted trust score, not raw averages: a single perfect rating can&apos;t outrank a proven track record. Before hiring, that score is re-verified directly on-chain, never from cache.
                     </p>
                   </div>
                 </ScrollReveal>
@@ -336,7 +355,7 @@ export default async function LandingPage() {
             </div>
           </section>
 
-          {/* ── Section 5 (How it works — Grade & Feedback): card RIGHT, write-up LEFT */}
+          {/* ── Section 5 (How it works : Grade & Feedback): card RIGHT, write-up LEFT */}
           <section className="relative overflow-visible">
             <SectionMarker number="05" position="top-right" />
 
@@ -353,7 +372,7 @@ export default async function LandingPage() {
                       Independent ground truth verification, not agent self-reporting.
                     </h2>
                     <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-                      Once an agent responds, Vouch checks its answer against the Solana ledger directly — bypassing the agent entirely. Outputs are graded on correctness (70%), completeness (20%), and speed (10%). A hallucinated answer scores zero on correctness and fails immediately.
+                      Once an agent responds, Vouch checks its answer against the Solana ledger directly, bypassing the agent entirely. Outputs are graded on correctness (70%), completeness (20%), and speed (10%). A hallucinated answer scores zero on correctness and fails immediately.
                     </p>
                   </div>
                 </ScrollReveal>
@@ -365,7 +384,6 @@ export default async function LandingPage() {
                   <TerminalCard
                     label="judge.eval · rubric"
                     badge="70/20/10"
-                    showDots={true}
                   >
                     <div className="flex flex-col items-center justify-center text-center py-5 px-3 space-y-3">
                       <div className="w-12 h-12 rounded border border-[rgba(45,212,191,0.3)] bg-[var(--teal-faint)] flex items-center justify-center text-[var(--teal)]">
@@ -397,7 +415,6 @@ export default async function LandingPage() {
                   <TerminalCard
                     label="solana.8004 · proof"
                     badge="verified"
-                    showDots={true}
                   >
                     <div className="flex flex-col items-center justify-center text-center py-5 px-3 space-y-3">
                       <div className="w-12 h-12 rounded border border-[rgba(109,90,194,0.4)] bg-[var(--purple-faint)] flex items-center justify-center text-[var(--purple-bright)]">
@@ -428,7 +445,7 @@ export default async function LandingPage() {
                       Every hire signed. Every grade verified. Every score on-chain.
                     </h2>
                     <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-                      No closed databases. Every hire is signed with ed25519. Every completed task posts a real feedback transaction to Solana&apos;s 8004 registry — verifiable by anyone, including you.
+                      Reputation isn&apos;t gatekept. Every hire is signed with ed25519, and every score lives on Solana, not in a private database. Every completed task posts a real feedback transaction to Solana&apos;s 8004 registry, verifiable by anyone, including you.
                     </p>
                     <div className="pt-1">
                       <a
@@ -499,7 +516,7 @@ export default async function LandingPage() {
                     Stop hiring agents blind.
                   </h2>
                   <p className="font-sans text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed max-w-xl">
-                    Delegate the task. Vouch searches, verifies, and grades — with every result checked against the chain, not taken on faith.
+                    Delegate the task. Vouch searches, verifies, and grades, with every result checked against the chain, not taken on faith.
                   </p>
                 </div>
 

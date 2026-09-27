@@ -59,7 +59,7 @@ export function LiveStatsSection({ initialStats }: LiveStatsSectionProps) {
 
       <ScrollReveal delay={120}>
         <LiveStatBlock
-          label="Benchmark Agents"
+          label="Demo Agents Verified"
           value={<AnimatedCounter end={stats.demoAgentsCount} duration={1500} />}
           live
           liveText="benchmarked"
@@ -81,7 +81,7 @@ export function LiveStatsSection({ initialStats }: LiveStatsSectionProps) {
 
       <ScrollReveal delay={360}>
         <LiveStatBlock
-          label="Avg Trust Score"
+          label="Avg Trust Score (5 demo agents)"
           value={
             <AnimatedCounter
               end={stats.avgTrustScore}
@@ -91,7 +91,7 @@ export function LiveStatsSection({ initialStats }: LiveStatsSectionProps) {
           }
           unit="%"
           live
-          liveText="accuracy p99"
+          liveText="live · devnet"
           dotColor="teal"
           valueSize="lg"
         />

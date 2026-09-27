@@ -5,7 +5,7 @@ interface TerminalCardProps {
   label: string;
   /** Optional badge text shown at the right of the header (e.g. network name) */
   badge?: string;
-  /** Whether to show the macOS-style dot menu in the header */
+  /** Optional showDots kept as optional boolean for backwards compatibility */
   showDots?: boolean;
   className?: string;
   children: React.ReactNode;
@@ -25,7 +25,6 @@ interface TerminalCardProps {
 export function TerminalCard({
   label,
   badge,
-  showDots = true,
   className = "",
   children,
 }: TerminalCardProps) {
@@ -33,13 +32,6 @@ export function TerminalCard({
     <div className={`terminal-card ${className}`}>
       {/* Header bar */}
       <div className="terminal-card-header">
-        {showDots && (
-          <div className="flex items-center gap-1.5 shrink-0" aria-hidden>
-            <span className="terminal-dot terminal-dot-red" />
-            <span className="terminal-dot terminal-dot-yellow" />
-            <span className="terminal-dot terminal-dot-green" />
-          </div>
-        )}
         <span className="terminal-label">{label}</span>
         {badge && <span className="terminal-badge">{badge}</span>}
       </div>

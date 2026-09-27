@@ -168,12 +168,17 @@ export async function searchAgents(
   } else {
     // Full-text search on name and description (OR), plus skills substring
     // Extract meaningful search tokens for natural language prompts
-    // (e.g. "check the SOL balance of this wallet: <address>" -> "SOL | balance | wallet")
+    const STOP_WORDS = new Set([
+      "the", "and", "this", "that", "for", "with", "from", "check", "get", "what",
+      "are", "about", "your", "look", "into", "tell", "please", "can", "you",
+      "all", "any", "some"
+    ]);
+
     const rawTokens = trimmed
       .replace(/[^\w\s]/g, " ")
       .split(/\s+/)
       .map((t) => t.trim())
-      .filter((t) => t.length >= 3 && !t.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/));
+      .filter((t) => t.length >= 3 && !STOP_WORDS.has(t.toLowerCase()) && !t.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/));
 
     const searchKeywords = rawTokens.length > 0 ? rawTokens : [trimmed];
     const tsQuery = searchKeywords.join(" | ");
@@ -247,21 +252,48 @@ export async function searchAgents(
     rows = merged;
   }
 
-  // ── Compute adjusted score and sort ─────────────────────────────────────
+  // Helper to compute token relevance score against agent name, description, and skills
+  const lowerTokens = trimmed
+    .replace(/[^\w\s]/g, " ")
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length >= 3 && !w.match(/^[1-9a-z]{32,44}$/i));
+
+  const computeRelevance = (agent: AgentSearchResult): number => {
+    let score = 0;
+    const name = (agent.name || "").toLowerCase();
+    const desc = (agent.description || "").toLowerCase();
+    const skills = (agent.skills || []).map((s) => s.toLowerCase()).join(" ");
+
+    for (const token of lowerTokens) {
+      if (token.length < 3) continue;
+      if (name.includes(token)) score += 4;
+      if (desc.includes(token)) score += 2;
+      if (skills.includes(token)) score += 2;
+    }
+    return score;
+  };
+
+  // ── Compute adjusted score, relevance, and sort ─────────────────────────────
   const ranked = rows
-    .map((row) => ({
-      ...row,
-      trust_score: Number(row.trust_score),
-      raw_avg_score: Number(row.raw_avg_score),
-      confidence: Number(row.confidence),
-      feedback_count: Number(row.feedback_count),
-      adjusted_score: computeAdjustedScore(
+    .map((row) => {
+      const adj = computeAdjustedScore(
         Number(row.trust_score),
         Number(row.confidence),
         Number(row.feedback_count)
-      ),
-    }))
-    .sort((a, b) => b.adjusted_score - a.adjusted_score)
+      );
+      const rel = computeRelevance(row);
+      return {
+        ...row,
+        trust_score: Number(row.trust_score),
+        raw_avg_score: Number(row.raw_avg_score),
+        confidence: Number(row.confidence),
+        feedback_count: Number(row.feedback_count),
+        adjusted_score: adj,
+        ranking_score: (rel * 100) + adj,
+      };
+    })
+    .sort((a, b) => b.ranking_score - a.ranking_score)
     .slice(0, limit);
 
   return {

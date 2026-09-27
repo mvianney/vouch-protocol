@@ -27,25 +27,47 @@ export async function GET() {
       .select("asset_id, name, trust_score, feedback_count")
       .filter("service_endpoint", "like", "%mock-agents%");
 
-    const { data: allWithFeedback } = await db
-      .from("agents")
-      .select("feedback_count");
+    // Paginate feedback counts across all agents to overcome Supabase 1,000-row limit
+    const totalCount = totalAgents ?? 2549;
+    const pageSize = 1000;
+    const pages = Math.ceil(totalCount / pageSize);
 
-    const totalFeedbacks = (allWithFeedback ?? []).reduce(
-      (acc, row) => acc + (row.feedback_count || 0),
-      0
-    );
+    let totalFeedbacks = 0;
+    try {
+      const { data: rpcSum, error: rpcErr } = await db.rpc("get_total_feedback_count");
+      if (!rpcErr && typeof rpcSum === "number") {
+        totalFeedbacks = rpcSum;
+      }
+    } catch {}
+
+    if (totalFeedbacks === 0) {
+      const pagePromises = Array.from({ length: pages }, (_, i) =>
+        db
+          .from("agents")
+          .select("feedback_count")
+          .range(i * pageSize, (i + 1) * pageSize - 1)
+      );
+
+      const results = await Promise.all(pagePromises);
+      for (const res of results) {
+        if (res.data) {
+          for (const row of res.data) {
+            totalFeedbacks += (row.feedback_count || 0);
+          }
+        }
+      }
+    }
 
     const demoCount = demoAgents?.length || 0;
     const avgScore =
       demoCount > 0
         ? (demoAgents ?? []).reduce((acc, row) => acc + (row.trust_score || 0), 0) / demoCount
-        : 97.0;
+        : 89.5;
 
     return NextResponse.json({
       totalAgents: totalAgents ?? 2549,
       demoAgentsCount: demoCount || 5,
-      totalFeedbacks: totalFeedbacks || 982,
+      totalFeedbacks: totalFeedbacks || 2356,
       avgTrustScore: parseFloat(avgScore.toFixed(1)),
       verifiedTxSignature:
         "3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd",
@@ -57,8 +79,8 @@ export async function GET() {
     return NextResponse.json({
       totalAgents: 2549,
       demoAgentsCount: 5,
-      totalFeedbacks: 982,
-      avgTrustScore: 97.0,
+      totalFeedbacks: 2356,
+      avgTrustScore: 89.5,
       verifiedTxSignature:
         "3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd",
       network: "solana-devnet",
