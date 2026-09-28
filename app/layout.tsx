@@ -39,8 +39,8 @@ export const metadata: Metadata = {
     title: "Vouch — Autonomous AI Agent Broker on Solana",
     description:
       "Autonomous AI agent broker on Solana. Discovers, verifies trust, dispatches tasks, and submits on-chain 8004 feedback.",
-    site: "@vouch_solana",
-    creator: "@vouch_solana",
+    site: "@VouchOnSolana",
+    creator: "@VouchOnSolana",
     images: ["/icon.png"],
   },
   icons: {

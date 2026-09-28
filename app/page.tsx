@@ -557,7 +557,7 @@ export default async function LandingPage() {
 
           <div className="flex items-center gap-6 font-mono text-xs text-[var(--text-secondary)]">
             <a
-              href="https://github.com/vouch-solana"
+              href="https://github.com/mvianney/vouch-protocol"
               target="_blank"
               rel="noreferrer"
               className="hover:text-[var(--text-primary)] transition-colors flex items-center gap-1.5"
@@ -566,7 +566,7 @@ export default async function LandingPage() {
               <span className="text-[var(--text-dim)]">↗</span>
             </a>
             <a
-              href="https://x.com/vouch_solana"
+              href="https://x.com/VouchOnSolana"
               target="_blank"
               rel="noreferrer"
               className="hover:text-[var(--text-primary)] transition-colors flex items-center gap-1.5"

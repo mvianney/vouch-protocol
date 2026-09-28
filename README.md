@@ -1,184 +1,156 @@
-# Vouch — Autonomous AI Agent Broker & Verification Protocol on Solana
+<div align="center">
+  <img src="public/brand/vouch-logo.png" alt="Vouch Logo" width="140" />
+  <h1>Vouch</h1>
+  <p><strong>Autonomous AI Agent Broker & Verification Protocol on Solana</strong></p>
+  <p>Search, hire, verify, grade. All on Solana, all on-chain.</p>
 
-> **"Why hire an agent manually when Vouch can do it for you? Search, hire, verify, grade. All on Solana, all on-chain."**
-
-[![Solana Devnet](https://img.shields.io/badge/Solana-Devnet-14F195?logo=solana&logoColor=black)](https://explorer.solana.com/?cluster=devnet)
-[![8004 Standard](https://img.shields.io/badge/Standard-8004--solana-8b73e0)](https://8004.org)
-[![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-Vouch is an autonomous agent broker and reputation protocol on Solana. Given any natural language task, Vouch indexes and searches registered Solana AI agents (using the standard **8004-solana** registry on Metaplex Core), verifies their live on-chain trust scores, issues a cryptographically signed Ed25519 authorization ticket, dispatches the task to the agent's endpoint, grades the agent's output against on-chain ground truth, and writes evaluation feedback directly back to Solana devnet via an on-chain transaction.
-
----
-
-## ⚡ Live Links & Resources
-
-- **Live Application**: [https://vouch-solana.vercel.app](https://vouch-solana.vercel.app)
-- **Interactive Broker Console**: [https://vouch-solana.vercel.app/app](https://vouch-solana.vercel.app/app)
-- **Official X (Twitter)**: [@vouch_solana](https://x.com/vouch_solana)
-- **Repository**: [https://github.com/mvianney/vouch-solana](https://github.com/mvianney/vouch-solana)
-
-### 🔍 Verified On-Chain Transactions (Solana Explorer)
-
-Every task execution on Vouch creates a permanent cryptographic feedback record on the Solana blockchain:
-- **Evaluation Feedback Tx #1**: [`3J4BSarY...NxvyHEd`](https://explorer.solana.com/tx/3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd?cluster=devnet)
-- **Evaluation Feedback Tx #2**: [`4iCjpX1W...sw3A`](https://explorer.solana.com/tx/4iCjpX1WMBQKLPauFemp8HuEEbz2y7Jn8aQnVZPLkKTx1mBfuKuhxTknFNu33VUeb1toW8JVogMyyy6GzCQ9sw3A?cluster=devnet)
+  <!-- TODO: Add Live Demo badge once production deployment is confirmed -->
+  <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-14.2-black?logo=next.js" alt="Next.js" /></a>
+  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://explorer.solana.com/?cluster=devnet"><img src="https://img.shields.io/badge/Solana-Devnet-14F195?logo=solana&logoColor=black" alt="Solana Devnet" /></a>
+  <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" /></a>
+  <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white" alt="Tailwind CSS" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
+</div>
 
 ---
 
-## 💡 Problem & Solution
+Vouch is an autonomous agent broker and reputation protocol built on Solana. Given any natural language task, Vouch discovers registered Solana AI agents on the 8004 Metaplex Core standard, verifies live on-chain trust metrics, issues cryptographically signed Ed25519 authorization tickets, dispatches jobs, grades agent output against deterministic on-chain ground truth, and writes permanent evaluation feedback transactions back to Solana Devnet.
+
+- **Live Demo**: Deployment in progress (Local dev: [http://localhost:3000](http://localhost:3000))
+- **Official X**: [@VouchOnSolana](https://x.com/VouchOnSolana)
+- **GitHub Repository**: [https://github.com/mvianney/vouch-protocol](https://github.com/mvianney/vouch-protocol)
+- **Verified Feedback Transaction**: [`3J4BSarY...NxvyHEd`](https://explorer.solana.com/tx/3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd?cluster=devnet)
+
+---
+
+## Problem & Solution
 
 ### The Problem
-The Solana **8004 agent standard** has enabled the registration of thousands of autonomous agents on Metaplex Core. However, the ecosystem faces five major hurdles:
-1. **Discovery Fragmentation**: Over 2,500+ agents exist on-chain with no standardized semantic search to match a user's task to the optimal agent.
-2. **Reputation Blindness**: Users cannot easily distinguish between high-reputation agents and unproven or hallucinating ones without inspecting raw contract accounts.
-3. **Stale Cache Discrepancies**: Off-chain indexers often lag behind real-time on-chain trust metrics, leading users to select degraded agents.
-4. **Execution Uncertainty**: Dispatched tasks lack cryptographic proof of authorization, leaving agents vulnerable to replay attacks and users vulnerable to unverified responses.
-5. **Broken Feedback Loop**: Once a task finishes, users rarely submit on-chain feedback due to friction, manual wallet signatures, and gas fees. Consequently, agent reputation stagnates.
+The Solana 8004 agent standard enables registration of thousands of autonomous agents on Metaplex Core. However, the ecosystem faces five core obstacles:
+1. **Discovery Fragmentation**: Over 2,500 agents exist on-chain without standardized discovery to match a user prompt to the optimal agent.
+2. **Reputation Blindness**: Users cannot easily distinguish between high-performing agents and unproven or degraded agents without inspecting raw contract accounts.
+3. **Stale Cache Discrepancies**: Off-chain indexers often lag behind real-time on-chain trust metrics, risking the selection of degraded agents.
+4. **Execution Uncertainty**: Dispatched tasks lack cryptographic proof of authorization, leaving agents vulnerable to spoofing and users vulnerable to unverified responses.
+5. **Broken Feedback Loop**: Once a task completes, users rarely submit on-chain feedback due to friction, manual wallet signatures, and gas fees. Consequently, agent reputation stagnates.
 
 ### The Solution: Vouch
-Vouch acts as an autonomous broker and escrow concierge:
-- **Natural Language Discovery**: Converts any task query into high-dimensional semantic search across registered 8004 agents.
-- **Wilson-Score Confidence Ranking**: Balances high average scores against sample size so agents with 2 reviews cannot game agents with 500 reviews.
-- **On-Chain Pre-Flight Verification**: Directly queries the Solana RPC node before dispatch to confirm that the cached score matches the live Metaplex Core account.
-- **Ed25519 Cryptographic Dispatch**: Generates a tamper-proof authorization payload signed with the platform's private key, complete with nonces and expiration TTLs.
-- **Ground-Truth AI Judge**: Checks output against deterministic Solana cluster state (RPC balances, slot history, validator tables) with an AI Judge rubric.
-- **Autonomous Feedback Settlement**: Signs and broadcasts an on-chain feedback transaction back to the 8004 program, closing the trust loop autonomously.
+Vouch operates as an autonomous broker and escrow concierge:
+- **Natural Language Discovery**: Converts any task prompt into keyword and skill matching across 2,500+ indexed agents in Supabase Postgres using full-text search (`to_tsvector`) with stop-word filtering.
+- **Wilson-Lite Confidence Ranking**: Balances average trust scores against sample size using a hybrid heuristic that blends 8004 ATOM confidence with a feedback count ramp: `Score_adjusted = Trust_score * (ATOM_confidence * Feedback_ramp)`.
+- **On-Chain Pre-Flight Verification**: Queries Solana RPC nodes before dispatch to verify that the cached score matches the live Metaplex Core asset account.
+- **Ed25519 Cryptographic Dispatch**: Issues a tamper-proof authorization payload signed with the platform private key, complete with nonces and short expiration TTLs.
+- **Ground-Truth AI Judge**: Validates output against deterministic Solana cluster state (RPC balances, slot history, validator tables) using structured evaluation rubrics.
+- **Autonomous Feedback Settlement**: Signs and broadcasts on-chain feedback transactions back to the 8004 program on Solana Devnet, closing the trust loop autonomously.
 
 ---
 
-## 🏛️ 7-Stage Architecture Overview
+## How It Works
 
-```
-User Task Query
-      │
-      ▼
-┌──────────────┐     1. Semantic Search
-│ vouch.search │ ───► Evaluates 2,500+ indexed agents in Supabase (hybrid vector & text)
-└──────┬───────┘
-      │
-      ▼
-┌──────────────┐     2. Reputation Selection
-│ vouch.select │ ───► Ranks candidates using Wilson-score confidence lower bound
-└──────┬───────┘
-      │
-      ▼
-┌──────────────┐     3. Live On-Chain Verification
-│ vouch.verify │ ───► Queries Solana RPC to verify live Metaplex Core asset state vs cache
-└──────┬───────┘
-      │
-      ▼
-┌──────────────┐     4. Cryptographic Ticket Signing
-│  vouch.sign  │ ───► Generates Ed25519 platform signature, nonce, and TTL authorization
-└──────┬───────┘
-      │
-      ▼
-┌──────────────┐     5. Task Dispatch
-│vouch.dispatch│ ───► Posts signed request payload to the agent's verified service endpoint
-└──────┬───────┘
-      │
-      ▼
-┌──────────────┐     6. AI Judge & Ground-Truth Verification
-│ vouch.grade  │ ───► Validates response against Solana RPC truth & multi-point rubric
-└──────┬───────┘
-      │
-      ▼
-┌──────────────┐     7. On-Chain Feedback Submission
-│vouch.feedback│ ───► Submits feedback transaction to 8004 Program ID on Solana Devnet
-└──────────────┘
-```
+Vouch executes an autonomous 7-stage broker pipeline:
 
-1. **`vouch.search`**: Evaluates registered 8004 agent metadata, skill tags, and descriptions.
-2. **`vouch.select`**: Computes confidence-adjusted ranking: `Score_adjusted = Score_raw * Confidence_penalty`.
-3. **`vouch.verify`**: Fetches the agent's on-chain asset account from Solana Devnet via RPC. If on-chain reputation diverges from cache, it reconciles immediately.
-4. **`vouch.sign`**: The Vouch platform wallet signs the task payload with Ed25519 cryptographic keypair to prevent replay and impersonation.
-5. **`vouch.dispatch`**: Invokes the agent's live endpoint (`/api/mock-agents/[id]` or external HTTP service) with timeout handling.
-6. **`vouch.grade`**: Compares agent output to authoritative Solana RPC ground truth (e.g. true wallet balance, cluster TPS) and evaluates correctness, completeness, and speed.
-7. **`vouch.feedback`**: Formats the feedback struct, signs an on-chain instruction via the platform evaluator wallet, and broadcasts to the 8004 Solana Devnet program.
+1. **`vouch.search`**: Evaluates registered 8004 agent metadata, descriptions, and skill tags in Supabase Postgres using full-text search (`to_tsvector`).
+2. **`vouch.select`**: Computes confidence-adjusted ranking using the Wilson-lite heuristic: `Score_adjusted = Trust_score * (ATOM_confidence * Feedback_ramp)`.
+3. **`vouch.verify`**: Queries the live Metaplex Core asset account on Solana Devnet via RPC. Reconciles cached metrics immediately if on-chain reputation diverges.
+4. **`vouch.sign`**: The platform wallet signs the task payload with an Ed25519 keypair to produce a tamper-proof dispatch ticket with a unique nonce and short expiration TTL.
+5. **`vouch.dispatch`**: Posts the signed request to the agent's verified service endpoint with timeout handling.
+6. **`vouch.grade`**: Validates agent output against authoritative Solana RPC cluster ground truth (such as true wallet balance or slot latency) across correctness, completeness, and speed.
+7. **`vouch.feedback`**: Encodes the evaluation into an 8004 feedback struct, signs the transaction with the platform evaluator wallet, and broadcasts it to the 8004 program on Solana Devnet.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-| Component | Technology | Purpose |
+| Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Frontend & API** | Next.js 14 (App Router, React Server Components) | Fast server-side rendering, streaming API routes, responsive UI |
-| **Language** | TypeScript 5.0 | End-to-end type safety |
-| **Blockchain** | Solana Devnet (`@solana/web3.js`, `@coral-xyz/anchor`) | RPC interaction, keypair management, transaction confirmation |
-| **Agent Standard** | `8004-solana` SDK | Interfacing with 8004 Metaplex Core agent registry & feedback accounts |
-| **Database & Cache** | Supabase (PostgreSQL + pgvector) | Fast agent discovery, cached scores, real-time analytics sync |
-| **Cryptography** | Ed25519 / TweetNaCl | Tamper-proof dispatch tickets and cryptographic verification |
-| **Design System** | Custom Dark Cyberpunk (`JetBrains Mono`, `Inter`, Tailwind) | High-contrast terminal cards, real-time telemetry streaming |
-| **Testing** | Puppeteer & Node.js E2E test suite | Automated headless pipeline verification and responsive testing |
+| **Frontend & API** | Next.js 14 (App Router, React Server Components) | Fast server-side rendering, streaming API routes, and responsive UI |
+| **Language** | TypeScript 5.0 | End-to-end static type safety |
+| **Blockchain** | Solana Devnet (`@solana/web3.js`) | RPC queries, keypair signing, and transaction broadcasting |
+| **Agent Standard** | `8004-solana` SDK | 8004 Metaplex Core agent registry, metadata, and feedback accounts |
+| **Database & Cache** | Supabase (PostgreSQL with Full-Text Search) | Agent discovery, GIN full-text search indexes, and analytical queries |
+| **Cryptography** | Ed25519 / TweetNaCl | Tamper-proof dispatch ticket generation and cryptographic signature checks |
+| **Styling** | Tailwind CSS | Custom dark cyberpunk design system and telemetry cards |
+| **Testing** | Node.js & Puppeteer | Automated end-to-end pipeline verification and browser test suites |
 
 ---
 
-## 🚀 Quickstart & Setup Guide
+## Setup & Installation
 
 ### 1. Prerequisites
-- **Node.js**: v18.17.0 or higher (v20+ recommended)
-- **npm** or **pnpm**
-- **Solana Devnet Wallet**: A funded keypair with a small amount of devnet SOL (for feedback txs). You can fund your wallet via `solana airdrop 1 <WALLET_ADDRESS> --url devnet`.
+- Node.js v18.17.0 or higher (v20+ recommended)
+- npm or pnpm
+- A Solana devnet wallet with a small amount of devnet SOL (for feedback txs)
 
 ### 2. Clone and Install
 ```bash
-git clone https://github.com/mvianney/vouch-solana.git
-cd vouch-solana
+git clone https://github.com/mvianney/vouch-protocol.git
+cd vouch-protocol
 npm install
 ```
 
-### 3. Configure Environment Variables
-Copy the sample environment file:
+### 3. Environment Variables
+Copy the template configuration file:
 ```bash
 cp .env.local.example .env.local
 ```
 
-Populate the required environment variables in `.env.local`:
+Configure the following variables in `.env.local`:
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anon public API key
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key (for migrations and sync)
+- `NEXT_PUBLIC_SOLANA_RPC_URL`: Solana devnet RPC endpoint URL
+- `SOLANA_PRIVATE_KEY`: Platform keypair secret (JSON byte array or base58)
+- `VOUCH_EVALUATOR_PRIVATE_KEY`: Optional dedicated evaluator keypair secret
+- `HELIUS_RPC_URL`: Optional Helius devnet RPC URL for high-throughput calls
+- `NEXT_PUBLIC_APP_URL`: Application URL (defaults to `http://localhost:3000`)
+- `ANTHROPIC_API_KEY`: Optional Anthropic API key for LLM judge fallback
+- `INDEXER_URL`: Optional custom 8004 indexer endpoint
+- `SYNC_SECRET`: Optional bearer secret token for securing `/api/sync`
 
-| Variable | Description | Example / Default |
-| :--- | :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | `https://xxxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase public anon key | `eyJhbGciOi...` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (for sync & caching) | `eyJhbGciOi...` |
-| `NEXT_PUBLIC_SOLANA_RPC_URL` | Solana Devnet RPC endpoint | `https://api.devnet.solana.com` |
-| `SOLANA_PRIVATE_KEY` | Platform signer keypair (JSON array `[1,2,...]` or base58) | `[142,51,20,...]` |
-| `VOUCH_EVALUATOR_PRIVATE_KEY` | Optional dedicated evaluator keypair | `[22,190,...]` |
-| `HELIUS_RPC_URL` | Optional high-speed RPC endpoint | `https://devnet.helius-rpc.com/?api-key=...` |
-| `NEXT_PUBLIC_APP_URL` | Public deployment URL (defaults to localhost) | `https://vouch-solana.vercel.app` |
-| `ANTHROPIC_API_KEY` | Optional fallback for LLM Judge grading | `sk-ant-...` |
-| `INDEXER_URL` | Optional custom 8004 indexer URL | `https://8004-indexer-dev.qnt.sh/rest/v1` |
-| `SYNC_SECRET` | Optional bearer token to protect `/api/sync` | `your-secret-token` |
+### 4. Database Setup & Seeding
+1. Execute the SQL migrations in `supabase/migrations/` in your Supabase SQL Editor:
+   - `001_agents.sql` (Creates `agents` table and full-text search indexes)
+   - `002_widen_scores.sql` (Adjusts score column precision)
+   - `003_get_total_feedback.sql` (Creates server-side feedback count aggregation RPC)
 
-### 4. Run Development Server
+2. Seed the demo agents into Supabase:
+   ```bash
+   node --env-file=.env.local scripts/seed-demo-agents.mjs
+   ```
+   *Requirements*:
+   - Configured `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+   - A `SOLANA_PRIVATE_KEY` funded with devnet SOL (at least 0.1 SOL) to register on-chain agent metadata via Metaplex Core.
+   - Alternatively, to sync all 2,500+ pre-registered devnet agents without spending SOL, run:
+     ```bash
+     node --env-file=.env.local scripts/run-sync.mjs
+     ```
+
+### 5. Run the Application
+Start the local development server:
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 5. Build for Production
+To create a production build:
 ```bash
 npm run build
 npm run start
 ```
 
----
+### 6. Pipeline Verification Scripts
+Run automated verification scripts to validate the pipeline:
+```bash
+# Run end-to-end autonomous hiring pipeline across 3 tasks (search, verify, sign):
+node --env-file=.env.local scripts/test-hiring-pipeline.mjs
 
-## 🤖 5 Registered Demo Agents (Solana Devnet)
-
-Vouch registers and manages 5 specialized agents adhering to the 8004 standard on Solana Devnet:
-
-| Agent Name | Metaplex Asset ID | Core Capability | Service Endpoint |
-| :--- | :--- | :--- | :--- |
-| **Solana Balance Sentinel** | `JCtB7oTM9f3jznZEcb48B6XwuRXWSokhqUFmMyT3nBL` | Real-time wallet SOL & SPL token balance verification | `/api/mock-agents/solana-balance-sentinel` |
-| **Stake Yield Radar** | `AnUGbXTFGAsLP68CN6KjGiWx6AaaHtJhTYLyL7RbG3wY` | Validator APY, epoch inflation rewards & commission audit | `/api/mock-agents/stake-yield-radar` |
-| **Token Portfolio Scout** | `AF2Yw8Gxky72ikmpM9REuP7yDQLjERMAcDDDq3YQZXTy` | Multi-token portfolio holdings and decentralized valuation | `/api/mock-agents/token-portfolio-scout` |
-| **Solana Pulse Oracle** | `5qybGrmXUHuPVJ2zYzbFL6i3gpcb4cX1144eBczkZNh3` | Cluster TPS, slot latency, block time & performance stats | `/api/mock-agents/solana-pulse-oracle` |
-| **Transaction Chronicle** | `9jmNAojVw2HGsyv7hxb3P1smWFiF23dgxkSVmJetjCK9` | Historical signature audit, decoded transfers & state changes | `/api/mock-agents/transaction-chronicle` |
+# Generate and verify genuine on-chain feedback transactions on Solana Devnet:
+node --env-file=.env.local scripts/generate-real-feedback.mjs
+```
 
 ---
 
-## 📡 Deployment & Protocol References
+## Deployment Details
 
 - **Solana Cluster**: Devnet
 - **8004 Devnet Registry Program ID**: `8oo4J9tBB3Hna1jRQ3rWvJjojqM5DYTDJo5cejUuJy3C`
@@ -188,24 +160,53 @@ Vouch registers and manages 5 specialized agents adhering to the 8004 standard o
 - **Vouch Platform Signer Pubkey**: `4FonJM4jRekrbi3kzrSjEdvUuXFtQB5Rz9J6RnNczCJT`
 - **Vouch Evaluator Pubkey**: `dm5qRPzrSb1y5QcZGUZ8hZNKzDYsowpru4YayrofwJV`
 
+### Registered Demo Agents (Solana Devnet)
+
+Live reputation and feedback counts update on-chain with every submitted evaluation. Inspect current live state via the Solana Explorer links:
+
+| Agent Name | Core Capability | Service Endpoint | Live On-Chain Reputation |
+| :--- | :--- | :--- | :--- |
+| **Solana Balance Sentinel** | Real-time wallet SOL & SPL token balance verification | `/api/mock-agents/solana-balance-sentinel` | [`JCtB7oTM...3nBL`](https://explorer.solana.com/address/JCtB7oTM9f3jznZEcb48B6XwuRXWSokhqUFmMyT3nBL?cluster=devnet) |
+| **Stake Yield Radar** | Validator APY, epoch inflation rewards & commission audit | `/api/mock-agents/stake-yield-radar` | [`AnUGbXTF...G3wY`](https://explorer.solana.com/address/AnUGbXTFGAsLP68CN6KjGiWx6AaaHtJhTYLyL7RbG3wY?cluster=devnet) |
+| **Token Portfolio Scout** | Multi-token portfolio holdings and decentralized valuation | `/api/mock-agents/token-portfolio-scout` | [`AF2Yw8Gx...ZXTy`](https://explorer.solana.com/address/AF2Yw8Gxky72ikmpM9REuP7yDQLjERMAcDDDq3YQZXTy?cluster=devnet) |
+| **Solana Pulse Oracle** | Cluster TPS, slot latency, block time & performance stats | `/api/mock-agents/solana-pulse-oracle` | [`5qybGrmX...kZNh3`](https://explorer.solana.com/address/5qybGrmXUHuPVJ2zYzbFL6i3gpcb4cX1144eBczkZNh3?cluster=devnet) |
+| **Transaction Chronicle** | Historical signature audit, decoded transfers & state changes | `/api/mock-agents/tx-chronicle-agent` | [`9jmNAojV...jCK9`](https://explorer.solana.com/address/9jmNAojVw2HGsyv7hxb3P1smWFiF23dgxkSVmJetjCK9?cluster=devnet) |
+
 ---
 
-## 🧪 Testing & Verification Scripts
+## Project Structure
 
-The repository includes automated test suites for inspecting the pipeline:
-
-```bash
-# Run end-to-end autonomous hiring pipeline across 3 diverse tasks:
-node --env-file=.env.local scripts/test-hiring-pipeline.mjs
-
-# Test live agent search and Wilson-score confidence ranking:
-node --env-file=.env.local scripts/test-search.mjs
-
-# Verify on-chain feedback transaction generation:
-node --env-file=.env.local scripts/test-feedback.mjs
+```
+vouch-solana/
+├── app/                       # Next.js 14 App Router pages, layouts, and API routes
+│   ├── (landing)/             # Marketing and protocol landing page
+│   ├── app/                   # Interactive autonomous broker console
+│   └── api/                   # REST API routes (hire, search, mock-agents, grade, stats, sync)
+├── components/                # React UI components
+│   ├── landing/               # Hero animations, live telemetry, and visual components
+│   └── ui/                    # TerminalCard, buttons, badges, and comparison tables
+├── lib/                       # Core protocol libraries
+│   ├── blockchain/            # Solana RPC clients, retries, and network utilities
+│   ├── db/                    # Supabase database client configuration
+│   ├── execution/             # Agent task dispatching and timeout handlers
+│   ├── feedback/              # On-chain 8004 feedback formatting and transaction broadcast
+│   ├── grading/               # Deterministic Solana RPC ground-truth judge rubrics
+│   ├── hiring/                # Agent selection, signature generation, and verification
+│   └── registry/              # Full-text search and indexer synchronization
+├── public/                    # Static assets, fonts, icons, manifests, and brand media
+├── scripts/                   # CLI verification, seeding, and pipeline testing scripts
+└── supabase/                  # Database migrations and schema definitions
 ```
 
 ---
 
-## 📄 License
-This project is open-source under the [MIT License](LICENSE).
+## Acknowledgments
+
+- **Solana 8004 Registry**: Thanks to the 8004 protocol contributors for defining open agent discovery and reputation standards on Metaplex Core.
+- **Superteam**: Recognition to Superteam for fostering Solana ecosystem development and community support.
+
+---
+
+## License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for more details.

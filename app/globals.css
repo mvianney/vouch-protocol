@@ -152,7 +152,7 @@
     font-family: var(--font-jetbrains);
   }
 
-  /* All data values always use mono — enforce via semantic class */
+  /* All data values always use mono - enforce via semantic class */
   .data, code, kbd, pre, samp {
     font-family: var(--font-jetbrains);
   }
