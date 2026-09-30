@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import {
   Connection,
   Keypair,
@@ -32,27 +30,29 @@ export function loadKeypairFromEnv(): Keypair {
 }
 
 /**
- * Get or create a dedicated evaluation client keypair for on-chain feedback.
- * The 8004 protocol forbids self-feedback (agent owner cannot review their own agent).
- * Since demo agents were registered by the platform deployer wallet, evaluations are
- * submitted by this dedicated client evaluator keypair, funded automatically as needed.
+ * Get the dedicated evaluation client keypair for on-chain feedback.
+ *
+ * Loaded exclusively from the VOUCH_EVALUATOR_PRIVATE_KEY environment variable
+ * (JSON byte array: "[1,2,3,...]"). This avoids any filesystem I/O, which is
+ * incompatible with Vercel serverless functions (read-only filesystem).
+ *
+ * The 8004 protocol forbids self-feedback (the agent owner cannot review their
+ * own agent). Since demo agents were registered by the platform deployer wallet,
+ * evaluations are submitted by this separate dedicated evaluator keypair.
+ *
+ * If VOUCH_EVALUATOR_PRIVATE_KEY is not set, falls back to SOLANA_PRIVATE_KEY
+ * as a last resort so the pipeline does not hard-fail in basic local setups.
  */
 export async function getOrCreateEvaluatorKeypair(conn?: Connection): Promise<Keypair> {
-  const envKey = process.env.VOUCH_EVALUATOR_PRIVATE_KEY;
-  let keypair: Keypair;
-
-  if (envKey) {
-    keypair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(envKey)));
-  } else {
-    const keyPath = path.join(process.cwd(), ".vouch-evaluator.json");
-    if (fs.existsSync(keyPath)) {
-      const data = JSON.parse(fs.readFileSync(keyPath, "utf-8"));
-      keypair = Keypair.fromSecretKey(Uint8Array.from(data));
-    } else {
-      keypair = Keypair.generate();
-      fs.writeFileSync(keyPath, JSON.stringify(Array.from(keypair.secretKey)), "utf-8");
-    }
+  const envKey = process.env.VOUCH_EVALUATOR_PRIVATE_KEY ?? process.env.SOLANA_PRIVATE_KEY;
+  if (!envKey) {
+    throw new Error(
+      "VOUCH_EVALUATOR_PRIVATE_KEY is not set. " +
+      "Generate a keypair locally and set it as an environment variable. " +
+      "See .env.local.example for the expected format."
+    );
   }
+  const keypair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(envKey)));
 
   // Ensure evaluator has enough SOL to pay for transactions
   const activeConn = conn ?? connection;

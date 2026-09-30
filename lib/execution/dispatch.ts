@@ -43,8 +43,14 @@ export interface DispatchFailureResult {
 export type DispatchResult = DispatchSuccessResult | DispatchFailureResult;
 
 /**
- * Normalize an endpoint URL for server-side environments (e.g., handling relative URLs
- * or default localhost ports).
+ * Normalize an endpoint URL for server-side environments.
+ *
+ * Handles three cases:
+ *   1. Relative path (e.g. "/api/mock-agents/foo") -> prepend NEXT_PUBLIC_APP_URL.
+ *   2. Absolute localhost URL (e.g. "http://localhost:3000/api/...") -> replace the
+ *      host with NEXT_PUBLIC_APP_URL when running in production so that endpoints
+ *      stored in the database before deployment are automatically rewritten.
+ *   3. Absolute non-localhost URL -> returned as-is.
  */
 function resolveEndpointUrl(rawEndpoint: string): string {
   if (!rawEndpoint || typeof rawEndpoint !== "string") {
@@ -52,16 +58,29 @@ function resolveEndpointUrl(rawEndpoint: string): string {
   }
 
   const trimmed = rawEndpoint.trim();
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
 
-  // If already absolute HTTP/HTTPS
+  // Rewrite absolute localhost URLs to the production host when we have one.
+  // Matches http://localhost:PORT/... or http://localhost/...
+  if (trimmed.match(/^https?:\/\/localhost(:\d+)?(\/|$)/)) {
+    if (appUrl && !appUrl.match(/^https?:\/\/localhost/)) {
+      // Production: swap the localhost origin for the real deployment URL.
+      const withoutOrigin = trimmed.replace(/^https?:\/\/localhost(:\d+)?/, "");
+      return `${appUrl}${withoutOrigin || "/"}`;
+    }
+    // Local dev: return as-is.
+    return trimmed;
+  }
+
+  // Already absolute non-localhost URL — return as-is.
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
     return trimmed;
   }
 
-  // If path-based relative URL, prepend host
+  // Relative path — prepend host.
   const port = process.env.PORT || 3000;
-  const host = process.env.NEXT_PUBLIC_APP_URL || `http://localhost:${port}`;
-  return `${host.replace(/\/$/, "")}/${trimmed.replace(/^\//, "")}`;
+  const host = appUrl || `http://localhost:${port}`;
+  return `${host}/${trimmed.replace(/^\//, "")}`;
 }
 
 /**
