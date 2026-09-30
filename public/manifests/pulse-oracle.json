@@ -7,12 +7,12 @@
     "data_analytics/metrics/tps_monitoring",
     "cryptocurrency/solana/ledger_state"
   ],
-  "url": "http://localhost:3000/api/mock-agents/solana-pulse-oracle",
-  "endpoint": "http://localhost:3000/api/mock-agents/solana-pulse-oracle",
+  "url": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-pulse-oracle",
+  "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-pulse-oracle",
   "services": [
     {
       "type": "mcp",
-      "value": "http://localhost:3000/api/mock-agents/solana-pulse-oracle"
+      "value": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-pulse-oracle"
     }
   ],
   "capabilities": ["cluster_telemetry", "slot_tracking", "tps_monitoring", "ledger_queries"]

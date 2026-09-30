@@ -7,16 +7,16 @@
     "monitoring/alerting/low_balance_detector",
     "cryptocurrency/solana/account_inspection"
   ],
-  "url": "http://localhost:3000/api/mock-agents/solana-balance-sentinel",
-  "endpoint": "http://localhost:3000/api/mock-agents/solana-balance-sentinel",
+  "url": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel",
+  "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel",
   "services": [
     {
       "type": "mcp",
-      "value": "http://localhost:3000/api/mock-agents/solana-balance-sentinel"
+      "value": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel"
     },
     {
       "type": "a2a",
-      "value": "http://localhost:3000/api/mock-agents/solana-balance-sentinel"
+      "value": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel"
     }
   ],
   "capabilities": ["wallet_balance", "spl_balance", "account_monitoring"]

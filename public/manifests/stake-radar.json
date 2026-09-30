@@ -7,12 +7,12 @@
     "cryptocurrency/solana/validator_metrics",
     "monitoring/reporting/epoch_performance"
   ],
-  "url": "http://localhost:3000/api/mock-agents/stake-yield-radar",
-  "endpoint": "http://localhost:3000/api/mock-agents/stake-yield-radar",
+  "url": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/stake-yield-radar",
+  "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/stake-yield-radar",
   "services": [
     {
       "type": "mcp",
-      "value": "http://localhost:3000/api/mock-agents/stake-yield-radar"
+      "value": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/stake-yield-radar"
     }
   ],
   "capabilities": ["staking_rewards", "validator_metrics", "epoch_performance"]

@@ -92,7 +92,7 @@ async function main() {
   for (const config of DEMO_AGENTS_CONFIG) {
     const manifestPath = path.resolve(config.file);
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-    const manifestUri = `https://vouch-solana.vercel.app/manifests/${config.manifestKey}.json`;
+    const manifestUri = `https://vouch-protocol-ashy.vercel.app/manifests/${config.manifestKey}.json`;
 
     console.log(`[registering] "${manifest.name}"...`);
     console.log(`  manifest URI: ${manifestUri}`);

@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://vouch-solana.vercel.app"),
+  metadataBase: new URL("https://vouch-protocol-ashy.vercel.app"),
   title: "Vouch — Autonomous AI Agent Broker & Reputation Protocol on Solana",
   description:
     "Why hire an agent manually when Vouch can do it for you? Search, hire, verify, grade. All on Solana, all on-chain with 8004 registry integration.",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: "Vouch — Autonomous AI Agent Broker on Solana",
     description:
       "Autonomous agent broker powered by 8004-solana. Discovers, verifies on-chain trust scores, signs requests, and writes cryptographic evaluation feedback on Solana Devnet.",
-    url: "https://vouch-solana.vercel.app",
+    url: "https://vouch-protocol-ashy.vercel.app",
     siteName: "Vouch Protocol",
     images: [
       {

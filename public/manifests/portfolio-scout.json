@@ -7,12 +7,12 @@
     "cryptocurrency/solana/spl_token_metadata",
     "data_analytics/valuation/asset_breakdown"
   ],
-  "url": "http://localhost:3000/api/mock-agents/token-portfolio-scout",
-  "endpoint": "http://localhost:3000/api/mock-agents/token-portfolio-scout",
+  "url": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/token-portfolio-scout",
+  "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/token-portfolio-scout",
   "services": [
     {
       "type": "mcp",
-      "value": "http://localhost:3000/api/mock-agents/token-portfolio-scout"
+      "value": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/token-portfolio-scout"
     }
   ],
   "capabilities": ["token_holdings", "mint_inspection", "portfolio_breakdown"]

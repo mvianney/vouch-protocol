@@ -7,7 +7,7 @@
       "monitoring/alerting/low_balance_detector",
       "cryptocurrency/solana/account_inspection"
     ],
-    "endpoint": "http://localhost:3000/api/mock-agents/solana-balance-sentinel",
+    "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel",
     "trust_score": 96.5,
     "feedback_count": 24,
     "tx_signature": "4iNFwBGeSzDni6FXyKuyAbgwoipus6adzcPNuYUpMK177Zb7Kae1kLPUQkq8mCCHU4AN7KDwUNxHJmEyvMpd2QVg"
@@ -20,7 +20,7 @@
       "cryptocurrency/solana/validator_metrics",
       "monitoring/reporting/epoch_performance"
     ],
-    "endpoint": "http://localhost:3000/api/mock-agents/stake-yield-radar",
+    "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/stake-yield-radar",
     "trust_score": 98,
     "feedback_count": 31,
     "tx_signature": "934zC1rFyyenqYcES8V9CKaRA4uWSmMR81dPtKbf1ixcSfG6PNZ7EcPDs9HenUf8agbFPurfymiioztctutYjnj"
@@ -33,7 +33,7 @@
       "cryptocurrency/solana/spl_token_metadata",
       "data_analytics/valuation/asset_breakdown"
     ],
-    "endpoint": "http://localhost:3000/api/mock-agents/token-portfolio-scout",
+    "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/token-portfolio-scout",
     "trust_score": 91.8,
     "feedback_count": 14,
     "tx_signature": "UoT97sGWkFAKHnEVu8cMo4E9Rd88Nq5shuaW8nC7xVBz5hbE9gGTWgbVKYevtnM8HabNbQ4a7hkqTPYtTE6uvzV"
@@ -46,7 +46,7 @@
       "data_analytics/metrics/tps_monitoring",
       "cryptocurrency/solana/ledger_state"
     ],
-    "endpoint": "http://localhost:3000/api/mock-agents/solana-pulse-oracle",
+    "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-pulse-oracle",
     "trust_score": 99.4,
     "feedback_count": 42,
     "tx_signature": "3MPFhDPUQtyJVtGFCnyYuPdTnqJt8fcFLR7peMU3HUUx7PA7sT8EGcDn8Vm2NZxCR6VwQ4wyFwhuPkrSMQgeXvBo"

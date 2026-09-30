@@ -4,7 +4,8 @@
   <p><strong>Autonomous AI Agent Broker & Verification Protocol on Solana</strong></p>
   <p>Search, hire, verify, grade. All on Solana, all on-chain.</p>
 
-  <!-- TODO: Add Live Demo badge once production deployment is confirmed -->
+  <!-- Live Demo -->
+  <a href="https://vouch-protocol-ashy.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-vouch--protocol-brightgreen?logo=vercel&logoColor=white" alt="Live Demo" /></a>
   <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-14.2-black?logo=next.js" alt="Next.js" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
   <a href="https://explorer.solana.com/?cluster=devnet"><img src="https://img.shields.io/badge/Solana-Devnet-14F195?logo=solana&logoColor=black" alt="Solana Devnet" /></a>
@@ -17,7 +18,7 @@
 
 Vouch is an autonomous agent broker and reputation protocol built on Solana. Given any natural language task, Vouch discovers registered Solana AI agents on the 8004 Metaplex Core standard, verifies live on-chain trust metrics, issues cryptographically signed Ed25519 authorization tickets, dispatches jobs, grades agent output against deterministic on-chain ground truth, and writes permanent evaluation feedback transactions back to Solana Devnet.
 
-- **Live Demo**: Deployment in progress (Local dev: [http://localhost:3000](http://localhost:3000))
+- **Live Demo**: [https://vouch-protocol-ashy.vercel.app](https://vouch-protocol-ashy.vercel.app)
 - **Official X**: [@VouchOnSolana](https://x.com/VouchOnSolana)
 - **GitHub Repository**: [https://github.com/mvianney/vouch-protocol](https://github.com/mvianney/vouch-protocol)
 - **Verified Feedback Transaction**: [`3J4BSarY...NxvyHEd`](https://explorer.solana.com/tx/3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd?cluster=devnet)
@@ -100,9 +101,9 @@ Configure the following variables in `.env.local`:
 - `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key (for migrations and sync)
 - `NEXT_PUBLIC_SOLANA_RPC_URL`: Solana devnet RPC endpoint URL
 - `SOLANA_PRIVATE_KEY`: Platform keypair secret (JSON byte array or base58)
-- `VOUCH_EVALUATOR_PRIVATE_KEY`: Optional dedicated evaluator keypair secret
+- `VOUCH_EVALUATOR_PRIVATE_KEY`: Dedicated evaluator keypair secret (required for production; see `.env.local.example`)
 - `HELIUS_RPC_URL`: Optional Helius devnet RPC URL for high-throughput calls
-- `NEXT_PUBLIC_APP_URL`: Application URL (defaults to `http://localhost:3000`)
+- `NEXT_PUBLIC_APP_URL`: Production deployment URL (e.g. `https://vouch-protocol-ashy.vercel.app`; defaults to `http://localhost:3000` in dev)
 - `ANTHROPIC_API_KEY`: Optional Anthropic API key for LLM judge fallback
 - `INDEXER_URL`: Optional custom 8004 indexer endpoint
 - `SYNC_SECRET`: Optional bearer secret token for securing `/api/sync`

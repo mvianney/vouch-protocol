@@ -12,16 +12,16 @@ const DEMO_MANIFESTS: Record<string, Record<string, unknown>> = {
       "monitoring/alerting/low_balance_detector",
       "cryptocurrency/solana/account_inspection"
     ],
-    url: "https://vouch-solana.vercel.app/api/mock-agents/solana-balance-sentinel",
-    endpoint: "https://vouch-solana.vercel.app/api/mock-agents/solana-balance-sentinel",
+    url: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel",
+    endpoint: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel",
     services: [
       {
         type: "mcp",
-        value: "https://vouch-solana.vercel.app/api/mock-agents/solana-balance-sentinel"
+        value: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel"
       },
       {
         type: "a2a",
-        value: "https://vouch-solana.vercel.app/api/mock-agents/solana-balance-sentinel"
+        value: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-balance-sentinel"
       }
     ],
     capabilities: ["wallet_balance", "spl_balance", "account_monitoring"]
@@ -35,12 +35,12 @@ const DEMO_MANIFESTS: Record<string, Record<string, unknown>> = {
       "forensics/audit/fee_analysis",
       "cryptocurrency/solana/log_decoding"
     ],
-    url: "https://vouch-solana.vercel.app/api/mock-agents/tx-chronicle-agent",
-    endpoint: "https://vouch-solana.vercel.app/api/mock-agents/tx-chronicle-agent",
+    url: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-chronicle-agent",
+    endpoint: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-chronicle-agent",
     services: [
       {
         type: "mcp",
-        value: "https://vouch-solana.vercel.app/api/mock-agents/tx-chronicle-agent"
+        value: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-chronicle-agent"
       }
     ],
     capabilities: ["transaction_history", "log_parsing", "fee_audit"]
@@ -54,12 +54,12 @@ const DEMO_MANIFESTS: Record<string, Record<string, unknown>> = {
       "cryptocurrency/solana/validator_metrics",
       "monitoring/reporting/epoch_performance"
     ],
-    url: "https://vouch-solana.vercel.app/api/mock-agents/stake-yield-radar",
-    endpoint: "https://vouch-solana.vercel.app/api/mock-agents/stake-yield-radar",
+    url: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/stake-yield-radar",
+    endpoint: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/stake-yield-radar",
     services: [
       {
         type: "mcp",
-        value: "https://vouch-solana.vercel.app/api/mock-agents/stake-yield-radar"
+        value: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/stake-yield-radar"
       }
     ],
     capabilities: ["staking_rewards", "validator_metrics", "epoch_performance"]
@@ -73,12 +73,12 @@ const DEMO_MANIFESTS: Record<string, Record<string, unknown>> = {
       "cryptocurrency/solana/spl_token_metadata",
       "data_analytics/valuation/asset_breakdown"
     ],
-    url: "https://vouch-solana.vercel.app/api/mock-agents/token-portfolio-scout",
-    endpoint: "https://vouch-solana.vercel.app/api/mock-agents/token-portfolio-scout",
+    url: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/token-portfolio-scout",
+    endpoint: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/token-portfolio-scout",
     services: [
       {
         type: "mcp",
-        value: "https://vouch-solana.vercel.app/api/mock-agents/token-portfolio-scout"
+        value: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/token-portfolio-scout"
       }
     ],
     capabilities: ["token_holdings", "mint_inspection", "portfolio_breakdown"]
@@ -92,12 +92,12 @@ const DEMO_MANIFESTS: Record<string, Record<string, unknown>> = {
       "data_analytics/metrics/tps_monitoring",
       "cryptocurrency/solana/ledger_state"
     ],
-    url: "https://vouch-solana.vercel.app/api/mock-agents/solana-pulse-oracle",
-    endpoint: "https://vouch-solana.vercel.app/api/mock-agents/solana-pulse-oracle",
+    url: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-pulse-oracle",
+    endpoint: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-pulse-oracle",
     services: [
       {
         type: "mcp",
-        value: "https://vouch-solana.vercel.app/api/mock-agents/solana-pulse-oracle"
+        value: "https://vouch-protocol-ashy.vercel.app/api/mock-agents/solana-pulse-oracle"
       }
     ],
     capabilities: ["cluster_telemetry", "slot_tracking", "tps_monitoring", "ledger_queries"]

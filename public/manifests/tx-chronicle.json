@@ -7,12 +7,12 @@
     "forensics/audit/fee_analysis",
     "cryptocurrency/solana/log_decoding"
   ],
-  "url": "http://localhost:3000/api/mock-agents/tx-chronicle-agent",
-  "endpoint": "http://localhost:3000/api/mock-agents/tx-chronicle-agent",
+  "url": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-chronicle-agent",
+  "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-chronicle-agent",
   "services": [
     {
       "type": "mcp",
-      "value": "http://localhost:3000/api/mock-agents/tx-chronicle-agent"
+      "value": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-chronicle-agent"
     }
   ],
   "capabilities": ["transaction_history", "log_parsing", "fee_audit"]
