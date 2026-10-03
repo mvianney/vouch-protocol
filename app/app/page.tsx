@@ -237,6 +237,29 @@ export default function AppPage() {
       delta: feedbackDelta > 0 ? `+${feedbackDelta}` : String(feedbackDelta),
       direction: feedbackDelta > 0 ? "pos" : "neutral",
     });
+
+    // 5. On-Chain Feedback Transaction (clickable Solana Explorer link)
+    if (result.feedbackSubmission?.signature) {
+      const txSig = result.feedbackSubmission.signature;
+      comparisonRows.push({
+        label: "Solana Feedback Transaction",
+        isVerdict: true,
+        verdictValue: truncate(txSig, 20),
+        details: "Confirmed on Solana Devnet (8004 Registry)",
+        delta: (
+          <a
+            href={`https://explorer.solana.com/tx/${txSig}?cluster=devnet`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--teal)] hover:underline inline-flex items-center gap-1 font-mono text-xs font-semibold"
+          >
+            <span>View on Solana Explorer</span>
+            <span>↗</span>
+          </a>
+        ),
+        direction: "pos",
+      });
+    }
   }
 
   return (
@@ -617,9 +640,20 @@ export default function AppPage() {
                 <div className="space-y-3 py-1 text-left font-mono text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-[var(--text-secondary)]">Solana Feedback Tx:</span>
-                    <span className="text-[var(--purple-bright)] font-bold">
-                      {truncate(result?.feedbackSubmission?.signature, 24) || "3havDHG...mjGPDSG"}
-                    </span>
+                    {result?.feedbackSubmission?.signature ? (
+                      <a
+                        href={`https://explorer.solana.com/tx/${result.feedbackSubmission.signature}?cluster=devnet`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[var(--purple-bright)] hover:underline font-bold"
+                      >
+                        {truncate(result.feedbackSubmission.signature, 24)}
+                      </a>
+                    ) : (
+                      <span className="text-[var(--purple-bright)] font-bold">
+                        {truncate(result?.feedbackSubmission?.signature, 24) || "3havDHG...mjGPDSG"}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[var(--text-secondary)]">Registry Status:</span>
@@ -632,10 +666,10 @@ export default function AppPage() {
                       <a
                         href={`https://explorer.solana.com/tx/${result.feedbackSubmission.signature}?cluster=devnet`}
                         target="_blank"
-                        rel="noreferrer"
-                        className="btn-ghost font-mono text-xs inline-flex items-center gap-1.5 py-1.5 px-3"
+                        rel="noopener noreferrer"
+                        className="btn-ghost font-mono text-xs inline-flex items-center gap-1.5 py-1.5 px-3 text-[var(--teal)] border-[rgba(45,212,191,0.3)] hover:bg-[var(--teal-faint)] hover:border-[var(--teal)]"
                       >
-                        <span>View Real Feedback Transaction on Solana Explorer</span>
+                        <span>View on Solana Explorer</span>
                         <span>↗</span>
                       </a>
                     </div>
@@ -661,12 +695,25 @@ export default function AppPage() {
                   Ground Truth Verification Summary
                 </h2>
               </div>
-              <button
-                onClick={handleReset}
-                className="btn-primary font-mono text-xs py-2 px-4 self-start sm:self-auto"
-              >
-                Submit Another Task →
-              </button>
+              <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
+                {result.feedbackSubmission?.signature && (
+                  <a
+                    href={`https://explorer.solana.com/tx/${result.feedbackSubmission.signature}?cluster=devnet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost font-mono text-xs py-2 px-3 inline-flex items-center gap-1.5 text-[var(--teal)] border-[rgba(45,212,191,0.3)] hover:bg-[var(--teal-faint)] hover:border-[var(--teal)]"
+                  >
+                    <span>View on Solana Explorer</span>
+                    <span>↗</span>
+                  </a>
+                )}
+                <button
+                  onClick={handleReset}
+                  className="btn-primary font-mono text-xs py-2 px-4"
+                >
+                  Submit Another Task →
+                </button>
+              </div>
             </div>
 
             <ComparisonTable
@@ -678,6 +725,38 @@ export default function AppPage() {
               }}
               rows={comparisonRows}
             />
+
+            {/* On-Chain Feedback Settlement Card */}
+            {result.feedbackSubmission?.signature && (
+              <div className="terminal-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[rgba(45,212,191,0.25)] bg-[var(--void-2)] rounded-lg">
+                <div className="space-y-1 text-left">
+                  <div className="flex items-center gap-2 font-mono text-2xs uppercase tracking-wider text-[var(--teal)]">
+                    <span className="w-2 h-2 rounded-full bg-[var(--teal)] animate-pulse" />
+                    <span className="font-semibold">On-Chain Feedback Transaction Attested</span>
+                  </div>
+                  <div className="font-mono text-xs text-[var(--text-secondary)] flex items-center gap-2 flex-wrap">
+                    <span>Transaction Signature:</span>
+                    <a
+                      href={`https://explorer.solana.com/tx/${result.feedbackSubmission.signature}?cluster=devnet`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--purple-bright)] hover:underline font-bold"
+                    >
+                      {truncate(result.feedbackSubmission.signature, 32)}
+                    </a>
+                  </div>
+                </div>
+                <a
+                  href={`https://explorer.solana.com/tx/${result.feedbackSubmission.signature}?cluster=devnet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary font-mono text-xs py-2 px-4 inline-flex items-center gap-2 whitespace-nowrap self-start sm:self-auto"
+                >
+                  <span>View on Solana Explorer</span>
+                  <span>↗</span>
+                </a>
+              </div>
+            )}
           </section>
         )}
       </div>

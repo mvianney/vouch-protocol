@@ -3,14 +3,14 @@ import React from "react";
 export type DeltaDirection = "pos" | "neg" | "neutral";
 
 export interface CompareRow {
-  /** Row label — rendered in sans */
+  /** Row label: rendered in sans */
   label: string;
-  /** 'Before' value — always mono (optional for single-verdict rows) */
-  before?: string | number;
-  /** 'After' value — always mono (optional for single-verdict rows) */
-  after?: string | number;
+  /** 'Before' value: always mono (optional for single-verdict rows) */
+  before?: React.ReactNode;
+  /** 'After' value: always mono (optional for single-verdict rows) */
+  after?: React.ReactNode;
   /** Delta display value, e.g. "+12.4" or "-3.1" */
-  delta?: string | number;
+  delta?: React.ReactNode;
   /** Direction controls teal (pos) or red (neg) colouring */
   direction?: DeltaDirection;
   /** If true, renders as a single-verdict row spanning data columns without a before/after delta */
@@ -96,17 +96,21 @@ export function ComparisonTable({
                         {row.details || row.after}
                       </span>
                       {row.delta && (
-                        <span
-                          className={`tag ${
-                            row.direction === "pos"
-                              ? "tag-teal"
-                              : row.direction === "neg"
-                              ? "tag-red"
-                              : ""
-                          }`}
-                        >
-                          {row.delta}
-                        </span>
+                        React.isValidElement(row.delta) ? (
+                          row.delta
+                        ) : (
+                          <span
+                            className={`tag ${
+                              row.direction === "pos"
+                                ? "tag-teal"
+                                : row.direction === "neg"
+                                ? "tag-red"
+                                : ""
+                            }`}
+                          >
+                            {row.delta}
+                          </span>
+                        )
                       )}
                     </div>
                   </td>
