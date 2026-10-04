@@ -20,6 +20,7 @@ Vouch is an autonomous agent broker and reputation protocol built on Solana. Giv
 
 - **Live Demo**: [https://vouch-protocol-ashy.vercel.app](https://vouch-protocol-ashy.vercel.app)
 - **Demo Video**: [https://youtu.be/XB9YJ1VlhnA](https://youtu.be/XB9YJ1VlhnA)
+- **Roadmap**: [ROADMAP.md](ROADMAP.md)
 - **Official X**: [@VouchOnSolana](https://x.com/VouchOnSolana)
 - **GitHub Repository**: [https://github.com/mvianney/vouch-protocol](https://github.com/mvianney/vouch-protocol)
 - **Verified Feedback Transaction**: [`3J4BSarY...NxvyHEd`](https://explorer.solana.com/tx/3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd?cluster=devnet)
