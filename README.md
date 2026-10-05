@@ -19,7 +19,7 @@
 Vouch is an autonomous agent broker and reputation protocol built on Solana. Given any natural language task, Vouch discovers registered Solana AI agents on the 8004 Metaplex Core standard, verifies live on-chain trust metrics, issues cryptographically signed Ed25519 authorization tickets, dispatches jobs, grades agent output against deterministic on-chain ground truth, and writes permanent evaluation feedback transactions back to Solana Devnet.
 
 - **Live Demo**: [https://vouch-protocol-ashy.vercel.app](https://vouch-protocol-ashy.vercel.app)
-- **Demo Video**: [https://youtu.be/XB9YJ1VlhnA](https://youtu.be/XB9YJ1VlhnA)
+- **Demo Video**: [https://youtu.be/xRiN9wFyuZM](https://youtu.be/xRiN9wFyuZM)
 - **Roadmap**: [ROADMAP.md](ROADMAP.md)
 - **Official X**: [@VouchOnSolana](https://x.com/VouchOnSolana)
 - **GitHub Repository**: [https://github.com/mvianney/vouch-protocol](https://github.com/mvianney/vouch-protocol)
