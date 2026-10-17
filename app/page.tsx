@@ -121,6 +121,12 @@ export default async function LandingPage() {
           </Link>
 
           <div className="flex items-center gap-4">
+            <Link
+              href="/agents"
+              className="font-mono text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              Agents
+            </Link>
             <div className="hidden sm:flex items-center gap-2">
               <span className="live-dot" />
               <span className="font-mono text-xs uppercase tracking-wider text-[var(--teal)]">

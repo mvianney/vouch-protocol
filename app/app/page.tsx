@@ -296,9 +296,17 @@ export default function AppPage() {
             <span className="tag-teal ml-2">devnet 8004</span>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-2xs text-[var(--text-muted)]">
-            <span className="live-dot" />
-            <span>broker operational</span>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/agents"
+              className="font-mono text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              Agents
+            </Link>
+            <div className="flex items-center gap-2 font-mono text-2xs text-[var(--text-muted)]">
+              <span className="live-dot" />
+              <span>broker operational</span>
+            </div>
           </div>
         </div>
 
