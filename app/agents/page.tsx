@@ -116,16 +116,17 @@ export default async function AgentsPage({ searchParams }: AgentsPageProps) {
       agents = (data as unknown as AgentRecord[]) || [];
       filteredCount = count || 0;
     } else {
-      // Sort by trust score: usable scores (0 to 100) come first, highest
-      // first. Scores outside that range, or missing, are listed after them.
+      // Sort by trust score: calibrated scores (above 0, up to 100) come
+      // first, highest first. Uncalibrated agents (0 or below, above 100, or
+      // missing) show as "Unverified" and are listed after them.
       type AgentsQuery = ReturnType<typeof buildQuery>;
       const scoreGroups: Array<(query: AgentsQuery) => AgentsQuery> = [
         (query) =>
           query
-            .gte("trust_score", MIN_TRUST_SCORE)
+            .gt("trust_score", MIN_TRUST_SCORE)
             .lte("trust_score", MAX_TRUST_SCORE),
+        (query) => query.lte("trust_score", MIN_TRUST_SCORE),
         (query) => query.gt("trust_score", MAX_TRUST_SCORE),
-        (query) => query.lt("trust_score", MIN_TRUST_SCORE),
         (query) => query.is("trust_score", null),
       ];
 

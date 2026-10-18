@@ -3,15 +3,20 @@
  *
  * Helpers for the public agent directory (/agents).
  *
- * Trust scores synced from the 8004 indexer come from its ATOM quality_score,
- * which can land outside 0 to 100 before calibration (see sync.ts). The
- * directory only shows scores inside that range and lists the rest last.
+ * Trust scores synced from the 8004 indexer come from its ATOM quality_score
+ * (see sync.ts). Until the indexer calibrates an agent, that score stays at 0
+ * or lands far above 100. The directory only shows scores above 0 and up to
+ * 100, and lists every other agent last as "Unverified".
  */
 
 export const MIN_TRUST_SCORE = 0;
 export const MAX_TRUST_SCORE = 100;
 
-/** True when a cached trust score is a finite number between 0 and 100. */
+/**
+ * True when a cached trust score is calibrated: a finite number above 0 and
+ * at most 100. Zero, negative, missing and above-100 values all mean the
+ * indexer has no calibrated score for the agent yet.
+ */
 export function isUsableTrustScore(
   score: number | string | null | undefined
 ): boolean {
@@ -19,7 +24,7 @@ export function isUsableTrustScore(
   const value = Number(score);
   return (
     Number.isFinite(value) &&
-    value >= MIN_TRUST_SCORE &&
+    value > MIN_TRUST_SCORE &&
     value <= MAX_TRUST_SCORE
   );
 }
