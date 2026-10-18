@@ -5,7 +5,8 @@
  *
  * Capabilities:
  *   1. Independently queries Solana RPC directly for verifiable ground truth
- *      (e.g., wallet SOL balances, recent signatures, cluster slot/telemetry).
+ *      (e.g., wallet SOL balances, recent signatures, cluster slot/telemetry,
+ *      a transaction looked up by its signature).
  *   2. Compares the hired agent's execution payload against the ground truth
  *      (incorporates tolerance for transient network/timing state).
  *   3. Evaluates correctness, completeness, and response speed.
@@ -22,11 +23,19 @@ if (typeof dns?.setDefaultResultOrder === "function") {
 import { Connection, PublicKey } from "@solana/web3.js";
 import { DispatchResult } from "@/lib/execution/dispatch";
 import { withRpcRetry } from "@/lib/blockchain/rpc";
+import { findTransactionSignature } from "@/lib/solana/signature";
+import {
+  TransactionCheck,
+  TransactionTruth,
+  compareTransactionExplanation,
+  summarizeTransactionTruth,
+} from "@/lib/grading/transaction";
 
 export interface GroundTruthResult {
   taskType:
     | "wallet_balance"
     | "transaction_history"
+    | "transaction_explain"
     | "cluster_telemetry"
     | "validator_staking"
     | "token_portfolio"
@@ -44,6 +53,8 @@ export interface VerificationComparison {
   reportedValue: unknown;
   difference?: number;
   details: string;
+  /** Per-fact results, for task types that check several facts. */
+  checks?: TransactionCheck[];
 }
 
 export interface GradeResult {
@@ -76,6 +87,37 @@ export async function fetchGroundTruth(taskDescription: string): Promise<GroundT
   const fetchedAt = new Date().toISOString();
   const lower = taskDescription.toLowerCase();
   const wallet = extractWalletAddress(taskDescription);
+
+  // A transaction signature decides the task on its own, whatever words
+  // surround it ("solana" contains "sol", "slot" is a telemetry word), so it
+  // is checked before every keyword branch.
+  const signature = findTransactionSignature(taskDescription);
+  if (signature) {
+    try {
+      const tx = await withRpcRetry(
+        (connection) =>
+          connection.getParsedTransaction(signature, {
+            maxSupportedTransactionVersion: 0,
+            commitment: "confirmed",
+          }),
+        { label: "truth-transaction" }
+      );
+      return {
+        taskType: "transaction_explain",
+        target: signature,
+        groundTruthData: summarizeTransactionTruth(signature, tx),
+        fetchedAt,
+      };
+    } catch (err: any) {
+      return {
+        taskType: "transaction_explain",
+        target: signature,
+        groundTruthData: null,
+        fetchedAt,
+        error: `Failed to fetch transaction: ${err.message}`,
+      };
+    }
+  }
 
   if ((lower.includes("balance") || lower.includes("sol")) && wallet) {
     try {
@@ -240,6 +282,20 @@ export function compareAgainstGroundTruth(
 
   const execution = agentResponse.execution ?? agentResponse;
 
+  if (groundTruth.taskType === "transaction_explain") {
+    const result = compareTransactionExplanation(
+      execution,
+      groundTruth.groundTruthData as TransactionTruth | null
+    );
+    return {
+      isMatch: result.isMatch,
+      groundTruthValue: result.groundTruthValue,
+      reportedValue: result.reportedValue,
+      details: result.details,
+      checks: result.checks,
+    };
+  }
+
   if (groundTruth.taskType === "wallet_balance") {
     const realSol = (groundTruth.groundTruthData?.balance_sol as number) ?? null;
     const reportedSol =
@@ -401,6 +457,20 @@ export async function generateGradeWithLLM(params: {
     deterministicSummary = comparison.isMatch
       ? `Verified authentic. ${agentName} executed the task in ${(executionDurationMs / 1000).toFixed(2)}s and analyzed token holdings (${comparison.reportedValue}) matching on-chain SPL token accounts.`
       : `Verification failed. ${agentName} reported invalid token portfolio data.`;
+  } else if (groundTruth.taskType === "transaction_explain") {
+    const truth = groundTruth.groundTruthData as TransactionTruth | null;
+    const seconds = (executionDurationMs / 1000).toFixed(2);
+    if (comparison.isMatch) {
+      deterministicSummary = truth?.found === false
+        ? `Verified authentic. ${agentName} correctly reported in ${seconds}s that this signature does not exist on Solana devnet.`
+        : `Verified authentic. ${agentName} explained the transaction in ${seconds}s and every checked fact matches the ledger (${comparison.groundTruthValue}).`;
+    } else if (!truth) {
+      deterministicSummary = `Verification failed. Vouch could not read this transaction from Solana devnet, so ${agentName}'s answer could not be verified.`;
+    } else if (comparison.reportedValue === null) {
+      deterministicSummary = `Verification failed. ${agentName} did not return a transaction explanation.`;
+    } else {
+      deterministicSummary = `Verification failed. ${agentName}'s explanation conflicts with the Solana ledger. ${comparison.details}`;
+    }
   } else if (groundTruth.taskType === "transaction_history") {
     deterministicSummary = comparison.isMatch
       ? `Verified authentic. ${agentName} executed the task in ${(executionDurationMs / 1000).toFixed(2)}s and decoded ${comparison.reportedValue} matching Solana ledger history.`

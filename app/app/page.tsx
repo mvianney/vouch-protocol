@@ -90,6 +90,7 @@ const EXAMPLE_TASKS = [
   "check the SOL balance of this wallet: 4FonJM4jRekrbi3kzrSjEdvUuXFtQB5Rz9J6RnNczCJT",
   "audit validator staking rewards and epoch performance",
   "monitor current Solana cluster TPS and slot latency",
+  "explain this transaction: 4TPdpCEZHGFR6fEqjPgSGBVGsujvLdh6hoL17mrpsVbSWREh3naGT6BHYDPKck8da41BwheMMhVPMX535AHqficc",
 ];
 
 export default function AppPage() {
@@ -584,6 +585,14 @@ export default function AppPage() {
                       {result?.execution?.durationMs ? `${(result.execution.durationMs / 1000).toFixed(2)}s` : "negotiating..."}
                     </span>
                   </div>
+                  {typeof result?.execution?.data?.execution?.summary === "string" && (
+                    <div className="space-y-1 pt-1">
+                      <span className="text-[var(--text-secondary)]">Agent Answer:</span>
+                      <p className="text-[var(--text-primary)] leading-relaxed break-words">
+                        {result.execution.data.execution.summary}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </TerminalCard>
             )}

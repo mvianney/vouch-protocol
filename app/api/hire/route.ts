@@ -2,7 +2,8 @@
  * POST /api/hire
  *
  * Full Vouch hiring pipeline:
- *   1. Search: Queries local Supabase cache by task keywords.
+ *   1. Search: Queries local Supabase cache by task keywords, then keeps only
+ *      agents that can do the task (see lib/hiring/capabilities.ts).
  *   2. Select: Picks the highest confidence-adjusted candidate match.
  *   3. Live Verify: Checks on-chain trust score via 8004 SDK (updates cache if changed).
  *   4. Sign: Cryptographically signs a hire authorization using Vouch platform wallet.
@@ -17,6 +18,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchAgents } from "@/lib/registry/search";
 import { selectAndVerifyAgent } from "@/lib/hiring/select";
+import { routeCandidatesForTask, searchQueryForTask } from "@/lib/hiring/capabilities";
 import { signHireRequest } from "@/lib/hiring/sign";
 import { dispatchTaskToAgent, DispatchResult } from "@/lib/execution/dispatch";
 import { gradeAgentExecution } from "@/lib/grading/verify";
@@ -41,24 +43,31 @@ export async function POST(req: NextRequest) {
 
     // Step 1: Search local Supabase candidates
     const searchResponse = await searchAgents({
-      query: trimmedTask,
+      query: searchQueryForTask(trimmedTask),
       limit: 10,
     });
 
-    if (!searchResponse.results || searchResponse.results.length === 0) {
+    // Keep only agents that can do this kind of task, so no agent is hired
+    // (or graded on-chain) for work it does not offer.
+    const routing = routeCandidatesForTask(trimmedTask, searchResponse.results ?? []);
+
+    if (routing.candidates.length === 0) {
       return NextResponse.json(
         {
-          error: "No matching agents found for this task",
+          error: routing.emptyMessage ?? "No matching agents found for this task",
           query: trimmedTask,
+          requiredSkill: routing.requiredSkill,
         },
         { status: 404 }
       );
     }
 
-    console.log(`[api/hire] Found ${searchResponse.results.length} candidate agents. Top candidate: ${searchResponse.results[0].name}`);
+    console.log(
+      `[api/hire] Found ${searchResponse.results.length} candidate agents (${routing.candidates.length} eligible${routing.requiredSkill ? ` with skill ${routing.requiredSkill}` : ""}). Top candidate: ${routing.candidates[0].name}`
+    );
 
     // Step 2 & 3: Select top candidate and verify live on-chain
-    const selection = await selectAndVerifyAgent(searchResponse.results);
+    const selection = await selectAndVerifyAgent(routing.candidates);
 
     if (!selection) {
       return NextResponse.json(

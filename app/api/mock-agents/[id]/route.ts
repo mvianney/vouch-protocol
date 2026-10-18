@@ -5,6 +5,9 @@ if (typeof dns?.setDefaultResultOrder === "function") {
 
 import { NextRequest, NextResponse } from "next/server";
 import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
+import { withRpcRetry } from "@/lib/blockchain/rpc";
+import { explainTransaction } from "@/lib/agents/tx-explainer";
+import { findTransactionSignature, isTransactionSignature } from "@/lib/solana/signature";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +49,52 @@ const AGENT_CATALOG: Record<string, AgentDef> = {
     description: "General-purpose Solana ledger observer providing TPS velocity, slot latency, epoch progression, and cluster telemetry.",
     capabilities: ["cluster_telemetry", "slot_tracking", "tps_monitoring", "ledger_queries"],
   },
+  "tx-explainer": {
+    id: "tx-explainer",
+    name: "Transaction Explainer",
+    description: "Explains any Solana transaction from its signature: status, fee, signers, programs called, and the SOL and token balance changes it caused.",
+    capabilities: ["transaction_explanation", "balance_change_analysis", "program_identification"],
+  },
 };
+
+/**
+ * Transaction Explainer run. Never throws and never fakes a result: when the
+ * signature is missing or the RPC cannot be reached, it says so.
+ */
+async function runTransactionExplainer(
+  signature: string | null
+): Promise<Record<string, unknown>> {
+  if (!signature) {
+    return {
+      action: "explain_transaction",
+      status: "error",
+      error: "No transaction signature found in the task. Include a Solana transaction signature or an explorer link.",
+    };
+  }
+
+  if (!isTransactionSignature(signature)) {
+    return {
+      action: "explain_transaction",
+      signature,
+      status: "error",
+      error: "That is not a valid Solana transaction signature.",
+    };
+  }
+
+  try {
+    return await withRpcRetry(
+      (connection) => explainTransaction(connection, signature),
+      { maxRetries: 1, initialBackoffMs: 500, label: "tx-explainer" }
+    );
+  } catch (err: any) {
+    return {
+      action: "explain_transaction",
+      signature,
+      status: "error",
+      error: `Could not read the transaction from Solana devnet: ${err.message}`,
+    };
+  }
+}
 
 export async function GET(
   req: NextRequest,
@@ -61,6 +109,7 @@ export async function GET(
 
   const { searchParams } = req.nextUrl;
   const targetWallet = searchParams.get("wallet") || searchParams.get("address");
+  const targetSignature = searchParams.get("signature") || searchParams.get("tx");
 
   let liveSolanaData: Record<string, unknown> = {};
 
@@ -68,7 +117,9 @@ export async function GET(
     const rpcUrl = process.env.HELIUS_RPC_URL ?? process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? clusterApiUrl("devnet");
     const connection = new Connection(rpcUrl, "confirmed");
 
-    if (agentId === "solana-balance-sentinel" && targetWallet) {
+    if (agentId === "tx-explainer" && targetSignature) {
+      liveSolanaData = await runTransactionExplainer(targetSignature.trim());
+    } else if (agentId === "solana-balance-sentinel" && targetWallet) {
       try {
         const pubkey = new PublicKey(targetWallet);
         const balLamports = await connection.getBalance(pubkey);
@@ -150,7 +201,12 @@ export async function POST(
     const rpcUrl = process.env.HELIUS_RPC_URL ?? process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? clusterApiUrl("devnet");
     const connection = new Connection(rpcUrl, "confirmed");
 
-    if (agentId === "solana-balance-sentinel" && targetWallet) {
+    if (agentId === "tx-explainer") {
+      const directSignature = typeof body.signature === "string" ? body.signature.trim() : "";
+      const signature =
+        directSignature || findTransactionSignature(String(body.taskDescription || body.task || ""));
+      executionResult = await runTransactionExplainer(signature);
+    } else if (agentId === "solana-balance-sentinel" && targetWallet) {
       try {
         const pubkey = new PublicKey(targetWallet);
         const balLamports = await connection.getBalance(pubkey);

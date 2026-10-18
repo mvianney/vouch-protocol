@@ -1,0 +1,19 @@
+{
+  "name": "Transaction Explainer",
+  "description": "Explains any Solana transaction from its signature: status, fee, signers, programs called, and the SOL and token balance changes it caused.",
+  "version": "1.0.0",
+  "skills": [
+    "data_analytics/blockchain_analytics/transaction_explainer",
+    "cryptocurrency/solana/program_identification",
+    "forensics/audit/balance_changes"
+  ],
+  "url": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-explainer",
+  "endpoint": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-explainer",
+  "services": [
+    {
+      "type": "mcp",
+      "value": "https://vouch-protocol-ashy.vercel.app/api/mock-agents/tx-explainer"
+    }
+  ],
+  "capabilities": ["transaction_explanation", "balance_change_analysis", "program_identification"]
+}
