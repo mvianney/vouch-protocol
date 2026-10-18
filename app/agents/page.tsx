@@ -3,9 +3,18 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { TerminalCard } from "@/components/ui/TerminalCard";
 import { supabaseAdmin } from "@/lib/db/supabase";
+import {
+  MAX_TRUST_SCORE,
+  MIN_TRUST_SCORE,
+  isUsableTrustScore,
+  planGroupSlices,
+} from "@/lib/registry/directory";
 import { AgentDirectoryControls } from "./AgentDirectoryControls";
 
 export const dynamic = "force-dynamic";
+
+const AGENT_COLUMNS =
+  "asset_id, name, description, skills, service_endpoint, trust_score, feedback_count";
 
 export const metadata: Metadata = {
   title: "Agent Directory | Vouch",
@@ -76,52 +85,83 @@ export default async function AgentsPage({ searchParams }: AgentsPageProps) {
       hireableIndexed = hireableRes.count;
     }
 
-    // Build the filtered and paginated query
-    let dbQuery = db
-      .from("agents")
-      .select(
-        "asset_id, name, description, skills, service_endpoint, trust_score, feedback_count",
-        { count: "exact" }
-      );
+    const sanitizedQ = rawQ ? rawQ.replace(/[,()]/g, " ").trim() : "";
 
-    if (isHireableOnly) {
-      dbQuery = dbQuery.not("service_endpoint", "is", null);
-    }
-
-    if (rawQ) {
-      const sanitizedQ = rawQ.replace(/[,()]/g, " ").trim();
+    // Fresh query with the shared filters (hireable toggle and search box)
+    const buildQuery = (
+      columns: string,
+      options?: { count?: "exact"; head?: boolean }
+    ) => {
+      let query = db.from("agents").select(columns, options);
+      if (isHireableOnly) {
+        query = query.not("service_endpoint", "is", null);
+      }
       if (sanitizedQ) {
-        dbQuery = dbQuery.or(
+        query = query.or(
           `name.ilike.%${sanitizedQ}%,description.ilike.%${sanitizedQ}%`
         );
       }
-    }
+      return query;
+    };
 
     if (isSortFeedback) {
-      dbQuery = dbQuery
+      const { data, count, error } = await buildQuery(AGENT_COLUMNS, {
+        count: "exact",
+      })
         .order("feedback_count", { ascending: false })
-        .order("trust_score", { ascending: false })
-        .order("asset_id", { ascending: true });
-    } else {
-      dbQuery = dbQuery
-        .order("trust_score", { ascending: false })
-        .order("feedback_count", { ascending: false })
-        .order("asset_id", { ascending: true });
-    }
+        .order("asset_id", { ascending: true })
+        .range(from, to);
 
-    dbQuery = dbQuery.range(from, to);
-
-    const { data, count, error } = await dbQuery;
-
-    if (error) {
-      console.error("[agents] Supabase query error:", error.message);
-      queryFailed = true;
-    } else {
-      agents = (data as AgentRecord[]) || [];
+      if (error) throw new Error(error.message);
+      agents = (data as unknown as AgentRecord[]) || [];
       filteredCount = count || 0;
+    } else {
+      // Sort by trust score: usable scores (0 to 100) come first, highest
+      // first. Scores outside that range, or missing, are listed after them.
+      type AgentsQuery = ReturnType<typeof buildQuery>;
+      const scoreGroups: Array<(query: AgentsQuery) => AgentsQuery> = [
+        (query) =>
+          query
+            .gte("trust_score", MIN_TRUST_SCORE)
+            .lte("trust_score", MAX_TRUST_SCORE),
+        (query) => query.gt("trust_score", MAX_TRUST_SCORE),
+        (query) => query.lt("trust_score", MIN_TRUST_SCORE),
+        (query) => query.is("trust_score", null),
+      ];
+
+      const groupCounts = await Promise.all(
+        scoreGroups.map(async (applyGroup) => {
+          const { count, error } = await applyGroup(
+            buildQuery("asset_id", { count: "exact", head: true })
+          );
+          if (error) throw new Error(error.message);
+          return count || 0;
+        })
+      );
+      filteredCount = groupCounts.reduce((sum, n) => sum + n, 0);
+
+      const pageGroups = await Promise.all(
+        planGroupSlices(groupCounts, from, to).map(async (slice) => {
+          let query = scoreGroups[slice.group](buildQuery(AGENT_COLUMNS));
+          query =
+            slice.group === 0
+              ? query
+                  .order("trust_score", { ascending: false })
+                  .order("feedback_count", { ascending: false })
+                  .order("asset_id", { ascending: true })
+              : query
+                  .order("feedback_count", { ascending: false })
+                  .order("asset_id", { ascending: true });
+
+          const { data, error } = await query.range(slice.from, slice.to);
+          if (error) throw new Error(error.message);
+          return (data as unknown as AgentRecord[]) || [];
+        })
+      );
+      agents = pageGroups.flat();
     }
   } catch (err: any) {
-    console.error("[agents] Database execution error:", err?.message);
+    console.error("[agents] Directory query error:", err?.message);
     queryFailed = true;
   }
 
@@ -210,7 +250,7 @@ export default async function AgentsPage({ searchParams }: AgentsPageProps) {
           </p>
 
           {/* Monospace Counter line */}
-          <div className="font-mono text-xs text-[var(--text-muted)] pt-1">
+          <div className="font-mono text-xs text-[var(--text-secondary)] pt-1">
             {hireableIndexed} hireable agents / {totalIndexed} indexed
           </div>
         </section>
@@ -249,6 +289,7 @@ export default async function AgentsPage({ searchParams }: AgentsPageProps) {
                 const skills = Array.isArray(agent.skills) ? agent.skills : [];
                 const displayedSkills = skills.slice(0, 3).map(formatSkillTag);
                 const extraSkillsCount = skills.length > 3 ? skills.length - 3 : 0;
+                const hasUsableScore = isUsableTrustScore(agent.trust_score);
 
                 return (
                   <TerminalCard
@@ -303,8 +344,16 @@ export default async function AgentsPage({ searchParams }: AgentsPageProps) {
                             <div className="text-2xs uppercase tracking-wider text-[var(--text-muted)]">
                               Trust score
                             </div>
-                            <div className="text-base font-bold text-[var(--teal)]">
-                              {(Number(agent.trust_score) || 0).toFixed(2)}
+                            <div
+                              className={`text-base font-bold ${
+                                hasUsableScore
+                                  ? "text-[var(--teal)]"
+                                  : "text-[var(--text-muted)]"
+                              }`}
+                            >
+                              {hasUsableScore
+                                ? Number(agent.trust_score).toFixed(2)
+                                : "Unverified"}
                             </div>
                           </div>
                           <div>
@@ -333,13 +382,15 @@ export default async function AgentsPage({ searchParams }: AgentsPageProps) {
                             <span>↗</span>
                           </a>
 
-                          <Link
-                            href="/app"
-                            className="btn-ghost font-mono text-2xs py-1 px-2.5 inline-flex items-center gap-1 self-start sm:self-auto hover:text-[var(--text-primary)]"
-                          >
-                            <span>Use in console</span>
-                            <span>→</span>
-                          </Link>
+                          {agent.service_endpoint ? (
+                            <Link
+                              href="/app"
+                              className="btn-ghost font-mono text-2xs py-1 px-2.5 inline-flex items-center gap-1 self-start sm:self-auto hover:text-[var(--text-primary)]"
+                            >
+                              <span>Use in console</span>
+                              <span>→</span>
+                            </Link>
+                          ) : null}
                         </div>
                       </div>
                     </div>
