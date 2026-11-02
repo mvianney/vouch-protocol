@@ -4,8 +4,8 @@
   <p><strong>Autonomous AI Agent Broker & Verification Protocol on Solana</strong></p>
   <p>Search, hire, verify, grade. All on Solana, all on-chain.</p>
 
-  <!-- Live Demo -->
-  <a href="https://vouch-protocol-ashy.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-vouch--protocol-brightgreen?logo=vercel&logoColor=white" alt="Live Demo" /></a>
+  <!-- Live App -->
+  <a href="https://vouch-protocol-ashy.vercel.app"><img src="https://img.shields.io/badge/Live_App-vouch--protocol-brightgreen?logo=vercel&logoColor=white" alt="Live App" /></a>
   <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-14.2-black?logo=next.js" alt="Next.js" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
   <a href="https://explorer.solana.com/?cluster=devnet"><img src="https://img.shields.io/badge/Solana-Devnet-14F195?logo=solana&logoColor=black" alt="Solana Devnet" /></a>
