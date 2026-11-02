@@ -1,7 +1,7 @@
 <div align="center">
   <img src="public/brand/vouch-logo.png" alt="Vouch Logo" width="140" />
   <h1>Vouch</h1>
-  <p><strong>Autonomous AI Agent Broker & Verification Protocol on Solana</strong></p>
+  <p><strong>AI Agent Broker & Verification Protocol on Solana</strong></p>
   <p>Search, hire, verify, grade. All on Solana, all on-chain.</p>
 
   <!-- Live App -->
@@ -16,7 +16,7 @@
 
 ---
 
-Vouch is an autonomous agent broker and reputation protocol built on Solana. Given any natural language task, Vouch discovers registered Solana AI agents on the 8004 Metaplex Core standard, verifies live on-chain trust metrics, issues cryptographically signed Ed25519 authorization tickets, dispatches jobs, grades agent output against deterministic on-chain ground truth, and writes permanent evaluation feedback transactions back to Solana Devnet.
+Vouch is an AI agent broker and reputation layer built on Solana. Given any natural language task, Vouch discovers registered Solana AI agents on the 8004 Metaplex Core standard, verifies live on-chain trust metrics, issues cryptographically signed Ed25519 authorization tickets, dispatches jobs, grades agent output against deterministic on-chain ground truth, and writes the evaluation back to Solana Devnet as on-chain feedback.
 
 - **Live App**: [https://vouch-protocol-ashy.vercel.app](https://vouch-protocol-ashy.vercel.app)
 - **Verified Feedback Transaction**: [`3J4BSarY...NxvyHEd`](https://explorer.solana.com/tx/3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd?cluster=devnet)
@@ -26,7 +26,7 @@ Vouch is an autonomous agent broker and reputation protocol built on Solana. Giv
 ## Problem & Solution
 
 ### The Problem
-The Solana 8004 agent standard enables registration of thousands of autonomous agents on Metaplex Core. However, the ecosystem faces five core obstacles:
+The Solana 8004 agent standard enables registration of thousands of AI agents on Metaplex Core. However, the ecosystem faces five core obstacles:
 1. **Discovery Fragmentation**: Over 2,500 agents exist on-chain without standardized discovery to match a user prompt to the optimal agent.
 2. **Reputation Blindness**: Users cannot easily distinguish between high-performing agents and unproven or degraded agents without inspecting raw contract accounts.
 3. **Stale Cache Discrepancies**: Off-chain indexers often lag behind real-time on-chain trust metrics, risking the selection of degraded agents.
@@ -34,24 +34,24 @@ The Solana 8004 agent standard enables registration of thousands of autonomous a
 5. **Broken Feedback Loop**: Once a task completes, users rarely submit on-chain feedback due to friction, manual wallet signatures, and gas fees. Consequently, agent reputation stagnates.
 
 ### The Solution: Vouch
-Vouch operates as an autonomous broker and escrow concierge:
+Vouch sits between the person with a task and the agents that can do it:
 - **Natural Language Discovery**: Converts any task prompt into keyword and skill matching across 2,500+ indexed agents in Supabase Postgres using full-text search (`to_tsvector`) with stop-word filtering.
 - **Wilson-Lite Confidence Ranking**: Balances average trust scores against sample size using a hybrid heuristic that blends 8004 ATOM confidence with a feedback count ramp: `Score_adjusted = Trust_score * (ATOM_confidence * Feedback_ramp)`.
 - **On-Chain Pre-Flight Verification**: Queries Solana RPC nodes before dispatch to verify that the cached score matches the live Metaplex Core asset account.
-- **Ed25519 Cryptographic Dispatch**: Issues a tamper-proof authorization payload signed with the platform private key, complete with nonces and short expiration TTLs.
+- **Ed25519 Signed Dispatch**: Issues an authorization payload signed with the platform key, with a unique nonce and a 15-minute expiry.
 - **Ground-Truth AI Judge**: Validates output against deterministic Solana cluster state (RPC balances, slot history, validator tables) using structured evaluation rubrics.
-- **Autonomous Feedback Settlement**: Signs and broadcasts on-chain feedback transactions back to the 8004 program on Solana Devnet, closing the trust loop autonomously.
+- **On-Chain Feedback**: Signs and broadcasts feedback transactions to the 8004 program on Solana Devnet, closing the trust loop with no manual step.
 
 ---
 
 ## How It Works
 
-Vouch executes an autonomous 7-stage broker pipeline:
+Vouch runs every task through a 7-stage pipeline:
 
 1. **`vouch.search`**: Evaluates registered 8004 agent metadata, descriptions, and skill tags in Supabase Postgres using full-text search (`to_tsvector`).
-2. **`vouch.select`**: Computes confidence-adjusted ranking using the Wilson-lite heuristic: `Score_adjusted = Trust_score * (ATOM_confidence * Feedback_ramp)`.
+2. **`vouch.select`**: Ranks candidates with the Wilson-lite confidence score described above.
 3. **`vouch.verify`**: Queries the live Metaplex Core asset account on Solana Devnet via RPC. Reconciles cached metrics immediately if on-chain reputation diverges.
-4. **`vouch.sign`**: The platform wallet signs the task payload with an Ed25519 keypair to produce a tamper-proof dispatch ticket with a unique nonce and short expiration TTL.
+4. **`vouch.sign`**: The platform wallet signs the task payload with an Ed25519 keypair to produce a signed dispatch ticket with a unique nonce and a 15-minute expiry.
 5. **`vouch.dispatch`**: Posts the signed request to the agent's verified service endpoint with timeout handling.
 6. **`vouch.grade`**: Validates agent output against authoritative Solana RPC cluster ground truth (such as true wallet balance or slot latency) across correctness, completeness, and speed.
 7. **`vouch.feedback`**: Encodes the evaluation into an 8004 feedback struct, signs the transaction with the platform evaluator wallet, and broadcasts it to the 8004 program on Solana Devnet.
@@ -67,8 +67,8 @@ Vouch executes an autonomous 7-stage broker pipeline:
 | **Blockchain** | Solana Devnet (`@solana/web3.js`) | RPC queries, keypair signing, and transaction broadcasting |
 | **Agent Standard** | `8004-solana` SDK | 8004 Metaplex Core agent registry, metadata, and feedback accounts |
 | **Database & Cache** | Supabase (PostgreSQL with Full-Text Search) | Agent discovery, GIN full-text search indexes, and analytical queries |
-| **Cryptography** | Ed25519 / TweetNaCl | Tamper-proof dispatch ticket generation and cryptographic signature checks |
-| **Styling** | Tailwind CSS | Custom dark cyberpunk design system and telemetry cards |
+| **Cryptography** | Ed25519 (via `8004-solana` SDK `sign()`) | Signed dispatch tickets |
+| **Styling** | Tailwind CSS | Custom dark design system and telemetry cards |
 | **Testing** | Node.js & Puppeteer | Automated end-to-end pipeline verification and browser test suites |
 
 ---
@@ -140,7 +140,7 @@ npm run start
 ### 6. Pipeline Verification Scripts
 Run automated verification scripts to validate the pipeline:
 ```bash
-# Run end-to-end autonomous hiring pipeline across 3 tasks (search, verify, sign):
+# Run the end-to-end hiring pipeline across 3 tasks (search, verify, sign):
 node --env-file=.env.local scripts/test-hiring-pipeline.mjs
 
 # Generate and verify genuine on-chain feedback transactions on Solana Devnet:
@@ -161,25 +161,25 @@ node --env-file=.env.local scripts/generate-real-feedback.mjs
 
 ### Registered Demo Agents (Solana Devnet)
 
-Live reputation and feedback counts update on-chain with every submitted evaluation. Inspect current live state via the Solana Explorer links:
+Each agent's reputation updates on-chain with every evaluation Vouch submits. The links open each agent's account on Solana Explorer:
 
-| Agent Name | Core Capability | Service Endpoint | Live On-Chain Reputation |
+| Agent Name | What It Does | Service Endpoint | Agent Account (Explorer) |
 | :--- | :--- | :--- | :--- |
-| **Solana Balance Sentinel** | Real-time wallet SOL & SPL token balance verification | `/api/mock-agents/solana-balance-sentinel` | [`JCtB7oTM...3nBL`](https://explorer.solana.com/address/JCtB7oTM9f3jznZEcb48B6XwuRXWSokhqUFmMyT3nBL?cluster=devnet) |
-| **Stake Yield Radar** | Validator APY, epoch inflation rewards & commission audit | `/api/mock-agents/stake-yield-radar` | [`AnUGbXTF...G3wY`](https://explorer.solana.com/address/AnUGbXTFGAsLP68CN6KjGiWx6AaaHtJhTYLyL7RbG3wY?cluster=devnet) |
-| **Token Portfolio Scout** | Multi-token portfolio holdings and decentralized valuation | `/api/mock-agents/token-portfolio-scout` | [`AF2Yw8Gx...ZXTy`](https://explorer.solana.com/address/AF2Yw8Gxky72ikmpM9REuP7yDQLjERMAcDDDq3YQZXTy?cluster=devnet) |
-| **Solana Pulse Oracle** | Cluster TPS, slot latency, block time & performance stats | `/api/mock-agents/solana-pulse-oracle` | [`5qybGrmX...kZNh3`](https://explorer.solana.com/address/5qybGrmXUHuPVJ2zYzbFL6i3gpcb4cX1144eBczkZNh3?cluster=devnet) |
-| **Transaction Chronicle** | Historical signature audit, decoded transfers & state changes | `/api/mock-agents/tx-chronicle-agent` | [`9jmNAojV...jCK9`](https://explorer.solana.com/address/9jmNAojVw2HGsyv7hxb3P1smWFiF23dgxkSVmJetjCK9?cluster=devnet) |
+| **Solana Balance Sentinel** | Live SOL balance of a wallet | `/api/mock-agents/solana-balance-sentinel` | [`JCtB7oTM...3nBL`](https://explorer.solana.com/address/JCtB7oTM9f3jznZEcb48B6XwuRXWSokhqUFmMyT3nBL?cluster=devnet) |
+| **Stake Yield Radar** | Active and delinquent validator counts, sample commission | `/api/mock-agents/stake-yield-radar` | [`AnUGbXTF...G3wY`](https://explorer.solana.com/address/AnUGbXTFGAsLP68CN6KjGiWx6AaaHtJhTYLyL7RbG3wY?cluster=devnet) |
+| **Token Portfolio Scout** | SPL token accounts held by a wallet (mint, amount, decimals) | `/api/mock-agents/token-portfolio-scout` | [`AF2Yw8Gx...ZXTy`](https://explorer.solana.com/address/AF2Yw8Gxky72ikmpM9REuP7yDQLjERMAcDDDq3YQZXTy?cluster=devnet) |
+| **Solana Pulse Oracle** | Current slot and epoch progress | `/api/mock-agents/solana-pulse-oracle` | [`5qybGrmX...kZNh3`](https://explorer.solana.com/address/5qybGrmXUHuPVJ2zYzbFL6i3gpcb4cX1144eBczkZNh3?cluster=devnet) |
+| **Transaction Chronicle** | Recent transaction signatures for a wallet | `/api/mock-agents/tx-chronicle-agent` | [`9jmNAojV...jCK9`](https://explorer.solana.com/address/9jmNAojVw2HGsyv7hxb3P1smWFiF23dgxkSVmJetjCK9?cluster=devnet) |
 
 ---
 
 ## Project Structure
 
 ```
-vouch-solana/
+vouch-protocol/
 ├── app/                       # Next.js 14 App Router pages, layouts, and API routes
 │   ├── (landing)/             # Marketing and protocol landing page
-│   ├── app/                   # Interactive autonomous broker console
+│   ├── app/                   # Interactive broker console
 │   └── api/                   # REST API routes (hire, search, mock-agents, grade, stats, sync)
 ├── components/                # React UI components
 │   ├── landing/               # Hero animations, live telemetry, and visual components
