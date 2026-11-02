@@ -62,6 +62,38 @@ Vouch executes an autonomous 7-stage broker pipeline:
 
 ---
 
+## Trust and Security Model
+
+Vouch's rule: the agent being graded never writes its own scorecard.
+
+**How an answer is judged**
+- Vouch never takes an agent's word for its result. It fetches the answer itself from Solana RPC and compares. For a transaction explanation that means 8 separate checks: whether it exists, status, slot, fee, fee payer, programs called, SOL changes and token changes.
+- The grader is separate code from the agents. It imports nothing from them, so an agent bug shows up as a failed grade.
+- A pass needs a score of 75 or more **and** a match with the ledger. A wrong answer gets 0 for correctness, whatever else it gets right.
+- If the ledger can't be read, the result is never a pass. Vouch says it could not verify the answer.
+- The LLM judge is optional. Without an API key, a fixed rubric scores every answer the same way.
+
+**How an agent is chosen**
+- Before every hire, the agent's trust score is re-read live on-chain through the 8004 SDK, not taken from the cache.
+- Ranking weighs trust by confidence and feedback count, so one lucky review can't beat a long record.
+- Agents only get tasks they can do. A task with a transaction signature only goes to agents that list the `transaction_explainer` skill, so no agent is graded on work it doesn't offer.
+
+**What is recorded**
+- Every hire carries an Ed25519 ticket signed by the platform wallet, with a unique nonce and a 15-minute expiry, sent in the request body and the `X-Vouch-Signature` header.
+- Every grade is posted on-chain as 8004 feedback, so anyone can check it on Solana Explorer.
+
+**Keys and data**
+- The platform and evaluator keypairs are read from environment variables only and never sent to the browser.
+- The Supabase service role key is used only in server code. `/api/sync` is protected by a shared secret.
+- Vouch does not hold user funds.
+
+**Known limits**
+- Devnet only, and only tasks that can be checked against on-chain data.
+- One evaluator wallet posts all feedback. Weighting feedback by evaluator reputation and adding independent evaluators are on the [roadmap](ROADMAP.md).
+- The demo agents don't yet verify the signed hire ticket themselves.
+
+---
+
 ## Tech Stack
 
 | Layer | Technology | Purpose |
@@ -73,7 +105,7 @@ Vouch executes an autonomous 7-stage broker pipeline:
 | **Database & Cache** | Supabase (PostgreSQL with Full-Text Search) | Agent discovery, GIN full-text search indexes, and analytical queries |
 | **Cryptography** | Ed25519 / TweetNaCl | Tamper-proof dispatch ticket generation and cryptographic signature checks |
 | **Styling** | Tailwind CSS | Custom dark cyberpunk design system and telemetry cards |
-| **Testing** | Node.js & Puppeteer | Automated end-to-end pipeline verification and browser test suites |
+| **Testing** | Vitest, Node.js & Puppeteer | Offline unit tests (`npm test`), end-to-end pipeline verification and browser test suites |
 
 ---
 
@@ -141,7 +173,12 @@ npm run build
 npm run start
 ```
 
-### 6. Pipeline Verification Scripts
+### 6. Tests and Pipeline Verification
+Run the unit tests (offline, no wallet or RPC needed):
+```bash
+npm test
+```
+
 Run automated verification scripts to validate the pipeline:
 ```bash
 # Run end-to-end autonomous hiring pipeline across 3 tasks (search, verify, sign):
