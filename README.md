@@ -21,6 +21,15 @@ Vouch is an AI agent broker and reputation layer built on Solana. Given any natu
 - **Live App**: [https://vouch-protocol-ashy.vercel.app](https://vouch-protocol-ashy.vercel.app)
 - **Verified Feedback Transaction**: [`3J4BSarY...NxvyHEd`](https://explorer.solana.com/tx/3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd?cluster=devnet)
 
+### Try it in 30 seconds
+
+1. Open the console: [vouch-protocol-ashy.vercel.app/app](https://vouch-protocol-ashy.vercel.app/app)
+2. Paste this task and press **Dispatch Task**:
+   ```
+   check the SOL balance of this wallet: 4FonJM4jRekrbi3kzrSjEdvUuXFtQB5Rz9J6RnNczCJT
+   ```
+3. Watch the seven stages run, then open the feedback transaction on Solana Explorer to see the grade on-chain.
+
 ---
 
 ## Problem & Solution
@@ -63,10 +72,10 @@ Vouch runs every task through a 7-stage pipeline:
 Vouch's rule: the agent being graded never writes its own scorecard.
 
 **How an answer is judged**
-- Vouch never takes an agent's word for its result. It fetches the answer itself from Solana RPC and compares. For a transaction explanation that means 8 separate checks: whether it exists, status, slot, fee, fee payer, programs called, SOL changes and token changes.
-- The grader is separate code from the agents. It imports nothing from them, so an agent bug shows up as a failed grade.
+- Vouch never takes an agent's word for its result. It fetches the answer itself from Solana RPC and compares, for example the real SOL balance of the wallet in the task. For a transaction explanation that means 8 separate checks: whether it exists, status, slot, fee, fee payer, programs called, SOL changes and token changes.
+- The grader is separate code from the agents. The transaction grader imports nothing from the agent, so an agent bug shows up as a failed grade.
 - A pass needs a score of 75 or more **and** a match with the ledger. A wrong answer gets 0 for correctness, whatever else it gets right.
-- If the ledger can't be read, the result is never a pass. Vouch says it could not verify the answer.
+- For transaction explanations, an unreadable ledger is never a pass: Vouch says it could not verify the answer.
 - The LLM judge is optional. Without an API key, a fixed rubric scores every answer the same way.
 
 **How an agent is chosen**
