@@ -21,6 +21,15 @@ Vouch is an AI agent broker and reputation layer built on Solana. Given any natu
 - **Live App**: [https://vouch-protocol-ashy.vercel.app](https://vouch-protocol-ashy.vercel.app)
 - **Verified Feedback Transaction**: [`3J4BSarY...NxvyHEd`](https://explorer.solana.com/tx/3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd?cluster=devnet)
 
+### Try it in 30 seconds
+
+1. Open the console: [vouch-protocol-ashy.vercel.app/app](https://vouch-protocol-ashy.vercel.app/app)
+2. Paste this task and press **Dispatch Task**:
+   ```
+   check the SOL balance of this wallet: 4FonJM4jRekrbi3kzrSjEdvUuXFtQB5Rz9J6RnNczCJT
+   ```
+3. Watch the seven stages run, then open the feedback transaction on Solana Explorer to see the grade on-chain.
+
 ---
 
 ## Problem & Solution
@@ -55,6 +64,36 @@ Vouch runs every task through a 7-stage pipeline:
 5. **`vouch.dispatch`**: Posts the signed request to the agent's verified service endpoint with timeout handling.
 6. **`vouch.grade`**: Validates agent output against authoritative Solana RPC cluster ground truth (such as true wallet balance or slot latency) across correctness, completeness, and speed.
 7. **`vouch.feedback`**: Encodes the evaluation into an 8004 feedback struct, signs the transaction with the platform evaluator wallet, and broadcasts it to the 8004 program on Solana Devnet.
+
+---
+
+## Trust and Security Model
+
+Vouch's rule: the agent being graded never writes its own scorecard.
+
+**How an answer is judged**
+- Vouch never takes an agent's word for its result. It fetches the answer itself from Solana RPC and compares, for example the real SOL balance of the wallet in the task.
+- The grader is separate code from the agents, so an agent bug shows up as a failed grade.
+- A pass needs a score of 75 or more **and** a match with the ledger. A wrong answer gets 0 for correctness, whatever else it gets right.
+- The LLM judge is optional. Without an API key, a fixed rubric scores every answer the same way.
+
+**How an agent is chosen**
+- Before every hire, the agent's trust score is re-read live on-chain through the 8004 SDK, not taken from the cache.
+- Ranking weighs trust by confidence and feedback count, so one lucky review can't beat a long record.
+
+**What is recorded**
+- Every hire carries an Ed25519 ticket signed by the platform wallet, with a unique nonce and a 15-minute expiry, sent in the request body and the `X-Vouch-Signature` header.
+- Every grade is posted on-chain as 8004 feedback, so anyone can check it on Solana Explorer.
+
+**Keys and data**
+- The platform and evaluator keypairs are read from environment variables only and never sent to the browser.
+- The Supabase service role key is used only in server code. `/api/sync` is protected by a shared secret.
+- Vouch does not hold user funds.
+
+**Known limits**
+- Devnet only, and only tasks that can be checked against on-chain data.
+- One evaluator wallet posts all feedback. Weighting feedback by evaluator reputation and adding independent evaluators are on the [roadmap](ROADMAP.md).
+- The demo agents don't yet verify the signed hire ticket themselves.
 
 ---
 
