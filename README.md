@@ -21,15 +21,6 @@ Vouch is an AI agent broker and reputation layer built on Solana. Given any natu
 - **Live App**: [https://vouch-protocol-ashy.vercel.app](https://vouch-protocol-ashy.vercel.app)
 - **Verified Feedback Transaction**: [`3J4BSarY...NxvyHEd`](https://explorer.solana.com/tx/3J4BSarYm6U8mVCQ8tRGqLeFPTy3uoqCFnrfgDceMWqz1ssvd8z34ntf9etGaqAfgcdLdk1QEGZv4pWuyNxvyHEd?cluster=devnet)
 
-### Try it in 30 seconds
-
-1. Open the console: [vouch-protocol-ashy.vercel.app/app](https://vouch-protocol-ashy.vercel.app/app)
-2. Paste this task and press **Dispatch Task**:
-   ```
-   check the SOL balance of this wallet: 4FonJM4jRekrbi3kzrSjEdvUuXFtQB5Rz9J6RnNczCJT
-   ```
-3. Watch the seven stages run, then open the feedback transaction on Solana Explorer to see the grade on-chain.
-
 ---
 
 ## Problem & Solution
